@@ -1,0 +1,35 @@
+/* ── Bottom Navigation (mobile only) ───────────────────────────── */
+.bottom-nav {
+  display: none; /* shown via media query below */
+  position: fixed; bottom: 0; left: 0; right: 0; z-index: 900;
+  background: var(--surface);
+  border-top: 1px solid var(--border);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  justify-content: space-around;
+  align-items: center;
+  padding: 6px 0 calc(6px + env(safe-area-inset-bottom));
+  height: calc(60px + env(safe-area-inset-bottom));
+}
+
+.bottom-tab {
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  gap: 2px; flex: 1;
+  padding: 4px 8px;
+  color: var(--text3);
+  text-decoration: none;
+  border-radius: var(--r3);
+  transition: color var(--t);
+  min-width: 0;
+}
+
+.bottom-tab:hover { color: var(--text2); }
+.bottom-tab.active { color: var(--accent); }
+
+.bottom-tab-icon  { font-size: 20px; line-height: 1; }
+.bottom-tab-label { font-size: 10px; font-weight: 600; white-space: nowrap; }
+
+@media (max-width: 768px) {
+  .bottom-nav { display: flex; }
+}

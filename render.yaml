@@ -1,0 +1,42 @@
+# render.yaml — Render.com deployment config for backend
+# Deploy at: https://render.com → New Web Service → Connect your repo
+
+services:
+  - type: web
+    name: cetpro-backend
+    runtime: node
+    rootDir: backend
+    buildCommand: npm install
+    startCommand: node server.js
+    healthCheckPath: /api/health
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 10000
+      - key: MONGODB_URI
+        sync: false          # Set in Render dashboard (secret)
+      - key: JWT_SECRET
+        sync: false          # Set in Render dashboard (secret)
+      - key: JWT_REFRESH_SECRET
+        sync: false          # Set in Render dashboard (secret)
+      - key: JWT_EXPIRES_IN
+        value: 7d
+      - key: JWT_REFRESH_EXPIRES_IN
+        value: 30d
+      - key: FRONTEND_URL
+        sync: false          # e.g. https://cetpredictorpro.vercel.app
+      - key: SMTP_HOST
+        sync: false
+      - key: SMTP_PORT
+        value: 587
+      - key: SMTP_USER
+        sync: false
+      - key: SMTP_PASS
+        sync: false
+      - key: EMAIL_FROM
+        value: noreply@cetpredictorpro.in
+      - key: RATE_LIMIT_WINDOW_MS
+        value: 900000
+      - key: RATE_LIMIT_MAX
+        value: 100
