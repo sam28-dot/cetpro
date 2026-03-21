@@ -1,5 +1,4 @@
-/**
- * Predictor.jsx — College prediction input form
+/* * Predictor.jsx — College prediction input form
  * Supports both Engineering and Pharmacy streams.
  */
 
@@ -10,70 +9,70 @@ import toast from 'react-hot-toast';
 import { predictionAPI } from '../utils/api';
 import { useAuth } from '../context/AuthContext';
 
-const ENGINEERING_BRANCHES = ['CSE','IT','AIML','DS','EXTC','MECH','CIVIL','ETRX','IOT','any'];
-const PHARMACY_BRANCHES    = ['BPHARM','PHARMD','MPHARM','any'];
+const ENGINEERING_BRANCHES = ['CSE', 'IT', 'AIML', 'DS', 'EXTC', 'MECH', 'CIVIL', 'ETRX', 'IOT', 'any'];
+const PHARMACY_BRANCHES = ['BPHARM', 'PHARMD', 'MPHARM', 'any'];
 
 const BRANCH_LABELS = {
   // Engineering
-  CSE:'Computer Science (CSE)', IT:'Information Technology', AIML:'AI / ML',
-  DS:'Data Science', EXTC:'Electronics & TC', MECH:'Mechanical',
-  CIVIL:'Civil', ETRX:'Electronics', IOT:'Internet of Things',
+  CSE: 'Computer Science (CSE)', IT: 'Information Technology', AIML: 'AI / ML',
+  DS: 'Data Science', EXTC: 'Electronics & TC', MECH: 'Mechanical',
+  CIVIL: 'Civil', ETRX: 'Electronics', IOT: 'Internet of Things',
   // Pharmacy
-  BPHARM:'B.Pharm', PHARMD:'Pharm.D', MPHARM:'M.Pharm',
-  any:'Any Branch',
+  BPHARM: 'B.Pharm', PHARMD: 'Pharm.D', MPHARM: 'M.Pharm',
+  any: 'Any Branch',
 };
 
-const CATEGORIES = ['OPEN','OBC','SC','ST','VJ-DT','NT-B','NT-C','NT-D','SBC','EWS'];
+const CATEGORIES = ['OPEN', 'OBC', 'SC', 'ST', 'VJ-DT', 'NT-B', 'NT-C', 'NT-D', 'SBC', 'EWS'];
 const UNIVERSITIES = [
-  { value:'mumbai',    label:'Mumbai University' },
-  { value:'pune',      label:'Savitribai Phule Pune University' },
-  { value:'nagpur',    label:'RTM Nagpur University' },
-  { value:'aurangabad',label:'Dr. Babasaheb Ambedkar Marathwada University' },
-  { value:'kolhapur',  label:'Shivaji University, Kolhapur' },
-  { value:'amravati',  label:'Sant Gadge Baba Amravati University' },
-  { value:'other',     label:'Other' },
+  { value: 'mumbai', label: 'Mumbai University' },
+  { value: 'pune', label: 'Savitribai Phule Pune University' },
+  { value: 'nagpur', label: 'RTM Nagpur University' },
+  { value: 'aurangabad', label: 'Dr. Babasaheb Ambedkar Marathwada University' },
+  { value: 'kolhapur', label: 'Shivaji University, Kolhapur' },
+  { value: 'amravati', label: 'Sant Gadge Baba Amravati University' },
+  { value: 'other', label: 'Other' },
 ];
 
 /* Approximate marks → percentile conversion */
 const marksToPercentile = (phy, chem, math) => {
-  const total = (parseFloat(phy)||0) + (parseFloat(chem)||0) + (parseFloat(math)||0);
+  const total = (parseFloat(phy) || 0) + (parseFloat(chem) || 0) + (parseFloat(math) || 0);
   if (!total) return 0;
   const norm = total / 200;
   return Math.round(Math.min(99.99, Math.max(0, Math.pow(norm, 0.65) * 100 - 1.5)) * 100) / 100;
 };
 
 const STEPS = [
-  { id:'score',    label:'Your Score',       icon:'🎓' },
-  { id:'profile',  label:'Your Profile',     icon:'👤' },
-  { id:'prefs',    label:'Preferences',      icon:'⚙️'  },
+  { id: 'score', label: 'Your Score', icon: '🎓' },
+  { id: 'profile', label: 'Your Profile', icon: '👤' },
+  { id: 'prefs', label: 'Preferences', icon: '⚙️' },
 ];
 
 export default function Predictor() {
-  const { user }   = useAuth();
-  const navigate   = useNavigate();
+  const { user } = useAuth();
+  const navigate = useNavigate();
   const [step, setStep] = useState(0);
   const [loading, setLoading] = useState(false);
 
   // Score state
   const [scoreMode, setScoreMode] = useState('percentile'); // 'percentile' | 'marks'
   const [percentile, setPercentile] = useState('');
-  const [marks, setMarks] = useState({ phy:'', chem:'', math:'' });
+  const [marks, setMarks] = useState({ phy: '', chem: '', math: '' });
   const [estPct, setEstPct] = useState(null);
 
   // Stream state — Engineering or Pharmacy
   const [stream, setStream] = useState('engineering');
 
   // Profile state
-  const [category, setCategory]   = useState(user?.category || 'OPEN');
-  const [gender, setGender]       = useState('any');
+  const [category, setCategory] = useState(user?.category || 'OPEN');
+  const [gender, setGender] = useState('any');
   const [university, setUniversity] = useState(user?.homeUniversity || 'mumbai');
 
   // Preferences state — branches reset when stream changes
   const BRANCHES = stream === 'pharmacy' ? PHARMACY_BRANCHES : ENGINEERING_BRANCHES;
-  const [branches, setBranches]   = useState(user?.preferredBranches?.length ? user.preferredBranches : ['CSE']);
-  const [location, setLocation]   = useState('any');
+  const [branches, setBranches] = useState(user?.preferredBranches?.length ? user.preferredBranches : ['CSE']);
+  const [location, setLocation] = useState('any');
   const [collegeType, setCollegeType] = useState('any');
-  const [maxFees, setMaxFees]     = useState(200000);
+  const [maxFees, setMaxFees] = useState(200000);
 
   // Errors
   const [errors, setErrors] = useState({});
@@ -144,11 +143,11 @@ export default function Predictor() {
       <div className="container-sm" style={{ padding: '40px 24px 80px' }}>
 
         {/* Header */}
-        <div style={{ textAlign:'center', marginBottom: 36 }}>
-          <h1 style={{ fontFamily:'var(--font-display)', fontSize:'clamp(26px,4vw,38px)', fontWeight:800, letterSpacing:'-0.5px', marginBottom: 8 }}>
+        <div style={{ textAlign: 'center', marginBottom: 36 }}>
+          <h1 style={{ fontFamily: 'var(--font-display)', fontSize: 'clamp(26px,4vw,38px)', fontWeight: 800, letterSpacing: '-0.5px', marginBottom: 8 }}>
             Find Your College
           </h1>
-          <p style={{ color:'var(--text2)', fontSize:16 }}>
+          <p style={{ color: 'var(--text2)', fontSize: 16 }}>
             Fill in the details — the more accurate, the better your predictions.
           </p>
         </div>
@@ -156,11 +155,11 @@ export default function Predictor() {
         {/* Step indicator */}
         <div style={s.stepRow}>
           {STEPS.map((st, i) => (
-            <div key={st.id} style={{ display:'flex', alignItems:'center', gap: 8 }}>
+            <div key={st.id} style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
               <div style={{ ...s.stepDot, ...(i === step ? s.stepDotActive : i < step ? s.stepDotDone : {}) }}>
                 {i < step ? '✓' : i + 1}
               </div>
-              <span style={{ fontSize:13, fontWeight:600, color: i === step ? 'var(--text)' : 'var(--text3)' }}>
+              <span style={{ fontSize: 13, fontWeight: 600, color: i === step ? 'var(--text)' : 'var(--text3)' }}>
                 {st.label}
               </span>
               {i < STEPS.length - 1 && <div style={s.stepLine} />}
@@ -174,9 +173,9 @@ export default function Predictor() {
             key={step}
             className="card"
             style={{ padding: 32 }}
-            initial={{ opacity:0, x: 20 }}
-            animate={{ opacity:1, x: 0 }}
-            exit={{ opacity:0, x: -20 }}
+            initial={{ opacity: 0, x: 20 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: -20 }}
             transition={{ duration: 0.25 }}
           >
 
@@ -191,7 +190,7 @@ export default function Predictor() {
                   <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
                     {[
                       { val: 'engineering', icon: '⚙️', label: 'Engineering', sub: 'CSE, IT, AIML, MECH, EXTC…' },
-                      { val: 'pharmacy',    icon: '💊', label: 'Pharmacy',    sub: 'B.Pharm, Pharm.D, M.Pharm…' },
+                      { val: 'pharmacy', icon: '💊', label: 'Pharmacy', sub: 'B.Pharm, Pharm.D, M.Pharm…' },
                     ].map(opt => (
                       <button key={opt.val} type="button"
                         onClick={() => { setStream(opt.val); setBranches([opt.val === 'pharmacy' ? 'BPHARM' : 'CSE']); }}
@@ -211,8 +210,8 @@ export default function Predictor() {
 
                 {/* Score mode toggle */}
                 <div style={s.toggle}>
-                  {['percentile','marks'].map(m => (
-                    <button key={m} style={{ ...s.toggleBtn, ...(scoreMode===m ? s.toggleActive : {}) }}
+                  {['percentile', 'marks'].map(m => (
+                    <button key={m} style={{ ...s.toggleBtn, ...(scoreMode === m ? s.toggleActive : {}) }}
                       onClick={() => setScoreMode(m)}>
                       {m === 'percentile' ? 'Percentile' : 'PCM Marks'}
                     </button>
@@ -222,10 +221,10 @@ export default function Predictor() {
                 {scoreMode === 'percentile' && (
                   <div className="form-group">
                     <label className="form-label">MHT-CET Percentile (0 – 100)</label>
-                    <input type="number" className={`form-input ${errors.percentile?'error':''}`}
+                    <input type="number" className={`form-input ${errors.percentile ? 'error' : ''}`}
                       placeholder="e.g. 94.50" value={percentile} min="0" max="100" step="0.01"
                       onChange={e => { setPercentile(e.target.value); setErrors({}); }}
-                      style={{ fontSize:22, fontWeight:700, letterSpacing:'-0.5px' }}
+                      style={{ fontSize: 22, fontWeight: 700, letterSpacing: '-0.5px' }}
                     />
                     {errors.percentile && <span className="form-error">{errors.percentile}</span>}
                   </div>
@@ -233,7 +232,7 @@ export default function Predictor() {
 
                 {scoreMode === 'marks' && (
                   <div>
-                    <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:12, marginBottom:12 }}>
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginBottom: 12 }}>
                       <div className="form-group">
                         <label className="form-label">Physics (out of 50)</label>
                         <input type="number" className="form-input" placeholder="e.g. 42" value={marks.phy} min="0" max="50"
@@ -253,7 +252,7 @@ export default function Predictor() {
                     {estPct && (
                       <div style={s.estBadge}>
                         ✨ Estimated Percentile: <strong>~{estPct}</strong>
-                        <span style={{ color:'var(--text3)', marginLeft:6, fontSize:12 }}>(using historical distribution model)</span>
+                        <span style={{ color: 'var(--text3)', marginLeft: 6, fontSize: 12 }}>(using historical distribution model)</span>
                       </div>
                     )}
                     {errors.percentile && <span className="form-error">{errors.percentile}</span>}
@@ -266,8 +265,8 @@ export default function Predictor() {
             {step === 1 && (
               <div>
                 <SectionTitle icon="👤" title="Your Profile" />
-                <div style={{ display:'flex', flexDirection:'column', gap:16 }}>
-                  <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:16 }}>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
                     <div className="form-group">
                       <label className="form-label">Category</label>
                       <select className="form-select" value={category} onChange={e => setCategory(e.target.value)}>
@@ -292,7 +291,7 @@ export default function Predictor() {
 
                   {/* Category info note */}
                   <div style={s.infoBox}>
-                    <span style={{ fontWeight:700 }}>Category:</span> Reserved category students receive a percentile adjustment in our engine to reflect the actual CAP round quota adjustments. SC +18, ST +25, OBC +8, and so on.
+                    <span style={{ fontWeight: 700 }}>Category:</span> Reserved category students receive a percentile adjustment in our engine to reflect the actual CAP round quota adjustments. SC +18, ST +25, OBC +8, and so on.
                   </div>
                 </div>
               </div>
@@ -302,11 +301,11 @@ export default function Predictor() {
             {step === 2 && (
               <div>
                 <SectionTitle icon="⚙️" title="Branch & Location Preferences" />
-                <div style={{ display:'flex', flexDirection:'column', gap:20 }}>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
 
                   {/* Branch chips */}
                   <div>
-                    <label className="form-label" style={{ marginBottom:10, display:'block' }}>Preferred Branches (select one or more)</label>
+                    <label className="form-label" style={{ marginBottom: 10, display: 'block' }}>Preferred Branches (select one or more)</label>
                     <div style={s.chipGroup}>
                       {BRANCHES.map(b => (
                         <button key={b} style={{ ...s.chip, ...(branches.includes(b) ? s.chipActive : {}) }}
@@ -318,7 +317,7 @@ export default function Predictor() {
                   </div>
 
                   {/* Location + type */}
-                  <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:16 }}>
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
                     <div className="form-group">
                       <label className="form-label">Preferred Location</label>
                       <select className="form-select" value={location} onChange={e => setLocation(e.target.value)}>
@@ -350,26 +349,26 @@ export default function Predictor() {
                     <label className="form-label">Max Annual Fees: ₹{maxFees.toLocaleString('en-IN')}</label>
                     <input type="range" min={10000} max={300000} step={5000} value={maxFees}
                       onChange={e => setMaxFees(parseInt(e.target.value))}
-                      style={{ width:'100%', accentColor:'var(--accent)' }} />
-                    <div style={{ display:'flex', justifyContent:'space-between', fontSize:12, color:'var(--text3)', marginTop:4 }}>
+                      style={{ width: '100%', accentColor: 'var(--accent)' }} />
+                    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 12, color: 'var(--text3)', marginTop: 4 }}>
                       <span>₹10K</span><span>₹3L</span>
                     </div>
                   </div>
 
                   {/* Summary card */}
                   <div style={s.summaryBox}>
-                    <div style={{ fontWeight:700, marginBottom:12, fontFamily:'var(--font-display)' }}>📋 Prediction Summary</div>
+                    <div style={{ fontWeight: 700, marginBottom: 12, fontFamily: 'var(--font-display)' }}>📋 Prediction Summary</div>
                     <div style={s.summaryGrid}>
-                      <SumItem label="Stream"     val={stream === 'pharmacy' ? '💊 Pharmacy' : '⚙️ Engineering'} />
+                      <SumItem label="Stream" val={stream === 'pharmacy' ? '💊 Pharmacy' : '⚙️ Engineering'} />
                       <SumItem label="Percentile" val={getEffectivePercentile() || '—'} />
-                      <SumItem label="Category"   val={category} />
-                      <SumItem label="Branches"   val={branches.join(', ')} />
-                      <SumItem label="Location"   val={location === 'any' ? 'Anywhere' : location} />
-                      <SumItem label="Max Fees"   val={`₹${(maxFees/1000).toFixed(0)}K`} />
+                      <SumItem label="Category" val={category} />
+                      <SumItem label="Branches" val={branches.join(', ')} />
+                      <SumItem label="Location" val={location === 'any' ? 'Anywhere' : location} />
+                      <SumItem label="Max Fees" val={`₹${(maxFees / 1000).toFixed(0)}K`} />
                     </div>
                   </div>
 
-                  {errors.api && <div style={{ color:'var(--red)', fontSize:13, padding:'8px 12px', background:'rgba(248,113,113,0.08)', borderRadius:'var(--r3)' }}>{errors.api}</div>}
+                  {errors.api && <div style={{ color: 'var(--red)', fontSize: 13, padding: '8px 12px', background: 'rgba(248,113,113,0.08)', borderRadius: 'var(--r3)' }}>{errors.api}</div>}
                 </div>
               </div>
             )}
@@ -378,7 +377,7 @@ export default function Predictor() {
         </AnimatePresence>
 
         {/* Navigation buttons */}
-        <div style={{ display:'flex', justifyContent:'space-between', marginTop: 20 }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 20 }}>
           {step > 0
             ? <button className="btn btn-ghost" onClick={back}>← Back</button>
             : <span />}
@@ -386,7 +385,7 @@ export default function Predictor() {
           {step < STEPS.length - 1
             ? <button className="btn btn-primary" onClick={next}>Continue →</button>
             : (
-              <button className="btn btn-grad" style={{ minWidth:180 }} onClick={handleSubmit} disabled={loading}>
+              <button className="btn btn-grad" style={{ minWidth: 180 }} onClick={handleSubmit} disabled={loading}>
                 {loading
                   ? <><Spinner /> Analysing...</>
                   : '✨ Predict My Colleges'}
@@ -402,38 +401,38 @@ export default function Predictor() {
 
 /* ── Small helpers ─────────────────────────────────────────────── */
 const SectionTitle = ({ icon, title }) => (
-  <div style={{ display:'flex', alignItems:'center', gap:8, marginBottom:20 }}>
-    <span style={{ fontSize:20 }}>{icon}</span>
-    <span style={{ fontFamily:'var(--font-display)', fontSize:18, fontWeight:800 }}>{title}</span>
-    <div style={{ flex:1, height:1, background:'var(--border)', marginLeft:8 }} />
+  <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 20 }}>
+    <span style={{ fontSize: 20 }}>{icon}</span>
+    <span style={{ fontFamily: 'var(--font-display)', fontSize: 18, fontWeight: 800 }}>{title}</span>
+    <div style={{ flex: 1, height: 1, background: 'var(--border)', marginLeft: 8 }} />
   </div>
 );
 
 const SumItem = ({ label, val }) => (
   <div>
-    <div style={{ fontSize:11, fontWeight:700, color:'var(--text3)', textTransform:'uppercase', letterSpacing:'0.08em' }}>{label}</div>
-    <div style={{ fontSize:15, fontWeight:700, marginTop:2, color:'var(--accent2)' }}>{String(val)}</div>
+    <div style={{ fontSize: 11, fontWeight: 700, color: 'var(--text3)', textTransform: 'uppercase', letterSpacing: '0.08em' }}>{label}</div>
+    <div style={{ fontSize: 15, fontWeight: 700, marginTop: 2, color: 'var(--accent2)' }}>{String(val)}</div>
   </div>
 );
 
 const Spinner = () => (
-  <span className="spin" style={{ width:18,height:18,border:'2px solid rgba(255,255,255,0.3)',borderTopColor:'#fff',borderRadius:'50%',display:'inline-block',flexShrink:0 }} />
+  <span className="spin" style={{ width: 18, height: 18, border: '2px solid rgba(255,255,255,0.3)', borderTopColor: '#fff', borderRadius: '50%', display: 'inline-block', flexShrink: 0 }} />
 );
 
 const s = {
-  stepRow: { display:'flex', alignItems:'center', gap:0, marginBottom:28, justifyContent:'center', flexWrap:'wrap', gap:8 },
-  stepDot: { width:28,height:28,borderRadius:'50%',display:'flex',alignItems:'center',justifyContent:'center',fontSize:12,fontWeight:700,background:'var(--surface2)',color:'var(--text3)',flexShrink:0 },
-  stepDotActive: { background:'var(--grad1)',color:'#fff' },
-  stepDotDone:   { background:'var(--green)',color:'#fff' },
-  stepLine: { width:32, height:1, background:'var(--border)' },
-  toggle: { display:'flex',background:'var(--bg2)',border:'1.5px solid var(--border)',borderRadius:'var(--r3)',padding:4,marginBottom:20 },
-  toggleBtn: { flex:1,padding:'8px',borderRadius:6,fontSize:13,fontWeight:600,color:'var(--text2)',transition:'all var(--t)',background:'none',border:'none',cursor:'pointer',fontFamily:'var(--font-body)' },
-  toggleActive: { background:'var(--accent)',color:'#fff' },
-  estBadge: { marginTop:12,padding:'10px 14px',background:'rgba(108,99,255,0.1)',border:'1px solid rgba(108,99,255,0.2)',borderRadius:'var(--r3)',fontSize:14,color:'var(--accent2)' },
-  infoBox: { padding:'12px 16px',background:'rgba(56,189,248,0.07)',border:'1px solid rgba(56,189,248,0.18)',borderRadius:'var(--r3)',fontSize:13,color:'var(--text2)',lineHeight:1.6 },
-  chipGroup: { display:'flex',flexWrap:'wrap',gap:8 },
-  chip: { padding:'7px 14px',borderRadius:99,fontSize:13,fontWeight:600,background:'var(--bg2)',border:'1.5px solid var(--border)',color:'var(--text2)',cursor:'pointer',transition:'all var(--t)',fontFamily:'var(--font-body)' },
-  chipActive: { background:'rgba(108,99,255,0.12)',borderColor:'var(--accent)',color:'var(--accent)' },
-  summaryBox: { padding:'20px 22px',background:'var(--bg2)',border:'1px solid var(--border)',borderRadius:'var(--r2)' },
-  summaryGrid: { display:'grid',gridTemplateColumns:'repeat(auto-fill,minmax(140px,1fr))',gap:'12px 20px' },
+  stepRow: { display: 'flex', alignItems: 'center', marginBottom: 28, justifyContent: 'center', flexWrap: 'wrap', gap: 8 },
+  stepDot: { width: 28, height: 28, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 12, fontWeight: 700, background: 'var(--surface2)', color: 'var(--text3)', flexShrink: 0 },
+  stepDotActive: { background: 'var(--grad1)', color: '#fff' },
+  stepDotDone: { background: 'var(--green)', color: '#fff' },
+  stepLine: { width: 32, height: 1, background: 'var(--border)' },
+  toggle: { display: 'flex', background: 'var(--bg2)', border: '1.5px solid var(--border)', borderRadius: 'var(--r3)', padding: 4, marginBottom: 20 },
+  toggleBtn: { flex: 1, padding: '8px', borderRadius: 6, fontSize: 13, fontWeight: 600, color: 'var(--text2)', transition: 'all var(--t)', background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'var(--font-body)' },
+  toggleActive: { background: 'var(--accent)', color: '#fff' },
+  estBadge: { marginTop: 12, padding: '10px 14px', background: 'rgba(108,99,255,0.1)', border: '1px solid rgba(108,99,255,0.2)', borderRadius: 'var(--r3)', fontSize: 14, color: 'var(--accent2)' },
+  infoBox: { padding: '12px 16px', background: 'rgba(56,189,248,0.07)', border: '1px solid rgba(56,189,248,0.18)', borderRadius: 'var(--r3)', fontSize: 13, color: 'var(--text2)', lineHeight: 1.6 },
+  chipGroup: { display: 'flex', flexWrap: 'wrap', gap: 8 },
+  chip: { padding: '7px 14px', borderRadius: 99, fontSize: 13, fontWeight: 600, background: 'var(--bg2)', border: '1.5px solid var(--border)', color: 'var(--text2)', cursor: 'pointer', transition: 'all var(--t)', fontFamily: 'var(--font-body)' },
+  chipActive: { background: 'rgba(108,99,255,0.12)', borderColor: 'var(--accent)', color: 'var(--accent)' },
+  summaryBox: { padding: '20px 22px', background: 'var(--bg2)', border: '1px solid var(--border)', borderRadius: 'var(--r2)' },
+  summaryGrid: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill,minmax(140px,1fr))', gap: '12px 20px' },
 };
