@@ -31,6 +31,14 @@ const FOUNDERS = [
     tags: ['Product Design', 'User Research', 'Frontend'],
     quote: "I spent lakhs on a college that didn't match my potential. I want you to understand the value of making informed choices.",
   },
+  {
+  initials: 'SA',
+  name: 'Saad Adhal',
+  role: 'Co-Founder & Product & Strategy',
+  avatarStyle: { background: 'linear-gradient(135deg,#f97316,#fb923c)' },
+  tags: ['Product Strategy', 'Admissions Guidance', 'User Experience'],
+  quote: "I had the potential to get into a better college, but a lack of proper information about form filling and the admission process held me back. We’re building MHT CET Predictor Pro so students don’t miss opportunities simply because they didn’t know the right steps.",
+},
 ];
 
 const STREAMS = [
