@@ -51,7 +51,7 @@ const STREAMS = [
     accentBg: 'rgba(108,99,255,0.15)',
     branches: ['CSE', 'IT', 'AI / ML', 'Data Science', 'EXTC', 'Mechanical', 'Civil', 'Electronics', 'IoT'],
     desc: 'Explore engineering records available in the imported Maharashtra CAP dataset. Coverage varies by branch, category, and source record.',
-    count: '25+ Colleges',
+    count: 'Coverage varies',
   },
   {
     icon: '💊',
@@ -62,7 +62,7 @@ const STREAMS = [
     accentBg: 'rgba(34,211,160,0.15)',
     branches: ['B.Pharm', 'Pharm.D', 'D.Pharm', 'M.Pharm (Pharmaceutics)', 'M.Pharm (Clinical Pharmacy)', 'Pharmacognosy'],
     desc: 'Pharmacy options are shown only where matching Maharashtra records and a compatible merit metric are available.',
-    count: '15+ Colleges',
+    count: 'Coverage varies',
   },
 ];
 
@@ -72,15 +72,6 @@ const DATA_SOURCES = [
   { source: 'College metadata', years: 'Varies by record', coverage: 'Fees, placements and rankings may be unavailable or unverified' },
   { source: 'Official college sources', years: 'Check each institution', coverage: 'Use college/NIRF disclosures to verify fees and placement claims' },
   { source: 'Official admission portal', years: 'Current cycle', coverage: 'Always confirm eligibility, seat type and CAP rules before applying' },
-];
-
-const ALGO = [
-  { pct: '30%', label: 'Placement Rate' },
-  { pct: '20%', label: 'Average Package' },
-  { pct: '15%', label: 'NIRF Rank' },
-  { pct: '15%', label: 'Cutoff Stability (5-yr trend)' },
-  { pct: '10%', label: 'Fees-to-Value Ratio' },
-  { pct: '10%', label: 'Autonomous Status + Tier Bonus' },
 ];
 
 export default function About() {
