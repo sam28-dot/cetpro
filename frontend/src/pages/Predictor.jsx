@@ -281,7 +281,7 @@ export default function Predictor() {
                     <div style={{ fontWeight:700, marginBottom:12, fontFamily:'var(--font-display)' }}>📋 Prediction Summary</div>
                     <div style={s.summaryGrid}>
                       <SumItem label="Stream"     val={stream === 'pharmacy' ? '💊 Pharmacy' : '⚙️ Engineering'} />
-                      <SumItem label="Percentile" val={getEffectivePercentile() || '—'} />
+                      <SumItem label={stream === 'pharmacy' ? 'Pharmacy merit score' : 'Percentile'} val={percentile !== '' ? Number(percentile).toFixed(2) : '—'} />
                       <SumItem label="Category"   val={category} />
                       <SumItem label="Branches"   val={branches.join(', ')} />
                       <SumItem label="Location"   val={location === 'any' ? 'Anywhere' : location} />
