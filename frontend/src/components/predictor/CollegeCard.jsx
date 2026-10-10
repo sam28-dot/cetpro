@@ -21,7 +21,7 @@ export default function CollegeCard({ result, index, onCompare, isCompared, onSa
     officialCategoryCode, academicYear, cutoffRound, cutoffSourceUrl } = result;
 
   const catColor = { safe: 'var(--green)', moderate: 'var(--yellow)', dream: 'var(--red)' }[category];
-  const isPharmacy = ['BPHARM', 'PHARMD', 'MPHARM', 'DPHARM'].includes(branch);
+  const isPharmacy = stream === 'pharmacy' || ['BPHARM', 'PHARMD', 'MPHARM', 'DPHARM'].includes(branch);
   const streamIcon = isPharmacy ? '💊' : '⚙️';
 
   return (
