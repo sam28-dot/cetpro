@@ -17,6 +17,7 @@ const userRoutes = require('./routes/user');
 const predictionRoutes = require('./routes/prediction');
 const collegeRoutes = require('./routes/college');
 const cutoffRoutes = require('./routes/cutoffs');
+const instituteRoutes = require('./routes/institutes');
 
 const app = express();
 
@@ -69,6 +70,7 @@ app.use('/api/users', userRoutes);
 app.use('/api/predictions', predictionRoutes);
 app.use('/api/colleges', collegeRoutes);
 app.use('/api/cutoffs', cutoffRoutes);
+app.use('/api/institutes', instituteRoutes);
 
 // ── Health check ──────────────────────────────────────────────────
 app.get('/api/health', (req, res) => {
