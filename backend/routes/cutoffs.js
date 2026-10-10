@@ -5,9 +5,9 @@ const router = express.Router();
 const dataset = require('../data/official-cutoffs-2025-26.json');
 
 const records = Array.isArray(dataset.records) ? dataset.records : [];
-const normalise = (value) => String(value ?? '').normalize('NFKD').replace(/[\\u0300-\\u036f]/g, '').trim().toLowerCase().replace(/\\s+/g, ' ').replace(/\\bkokan\\b/g, 'konkan');
+const normalise = (value) => String(value ?? '').normalize('NFKD').trim().toLowerCase().split(' ').filter(Boolean).join(' ').replace('kokan', 'konkan');
 const normaliseStage = (value) => {
-  const stage = String(value ?? '').trim().toUpperCase().replace(/^STAGE\\s*/, '').replace(/[^IVX0-9]/g, '');
+  const stage = String(value ?? '').trim().toUpperCase().replace('STAGE ', '').replaceAll(' ', '').replaceAll('-', '');
   return stage;
 };
 
