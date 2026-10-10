@@ -13,8 +13,8 @@ const fadeUp = (delay = 0) => ({
 });
 
 const FEATURES = [
-  { icon: '🧠', title: 'Smart Prediction Engine',    desc: 'Explore imported Maharashtra CAP cutoff records using your percentile, stream, category, and preferences. Results are historical references, not admission guarantees.' },
-  { icon: '🏆', title: 'Composite Ranking Score',    desc: 'Review available college and cutoff details side by side. Missing or unverified fees and placement figures are not fabricated.' },
+  { icon: '🧠', title: 'Historical Cutoff Explorer',    desc: 'Explore imported Maharashtra CAP cutoff records using your percentile, stream, category, and preferences. Results are historical references, not admission guarantees.' },
+  { icon: '🏆', title: 'College Context, Clearly Labeled',    desc: 'Review available college and cutoff details side by side. Missing or unverified fees and placement figures are not fabricated.' },
   { icon: '⚖️',  title: 'Side-by-Side Compare',      desc: 'Compare supported college information where records are available, and keep your shortlist easier to review.' },
   { icon: '📍', title: 'Location Intelligence',      desc: 'Narrow results using available location and preference fields. Check official eligibility and home-university rules separately.' },
   { icon: '📄', title: 'PDF Report Download',        desc: 'Export a shareable PDF summary of available results to discuss with family or a counsellor.' },
