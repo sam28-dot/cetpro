@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import api from '../utils/api';
 
 const CATEGORIES = [
@@ -24,11 +24,6 @@ export default function HistoricalCutoffs() {
   const [meta, setMeta] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
-  const [institutes, setInstitutes] = useState([]);
-  const [instituteQuery, setInstituteQuery] = useState('');
-  const [instituteLoading, setInstituteLoading] = useState(true);
-  const [instituteError, setInstituteError] = useState('');
-  const [instituteWarning, setInstituteWarning] = useState('');
 
   useEffect(() => {
     let active = true;
@@ -43,44 +38,6 @@ export default function HistoricalCutoffs() {
       });
     return () => { active = false; };
   }, []);
-
-  useEffect(() => {
-    let active = true;
-    api.get('/institutes')
-      .then(({ data }) => {
-        if (!active) return;
-        if (!data.success) throw new Error(data.message || 'Unable to load the official institute directory.');
-        setInstitutes(data.institutes || []);
-        setInstituteWarning(data.warning || '');
-      })
-      .catch(err => {
-        if (active) setInstituteError(err.response?.data?.message || err.message || 'Unable to load the official institute directory.');
-      })
-      .finally(() => { if (active) setInstituteLoading(false); });
-    return () => { active = false; };
-  }, []);
-
-  const filteredInstitutes = useMemo(() => {
-    const query = instituteQuery.trim().toLowerCase().replace(/\s+/g, ' ');
-    if (!query) return institutes;
-    return institutes.filter(item => [item.instituteCode, item.name, item.status].some(value => String(value || '').toLowerCase().replace(/\s+/g, ' ').includes(query)));
-  }, [institutes, instituteQuery]);
-
-  const exportInstitutesCsv = () => {
-    const columns = ['Institute Code', 'Institute Name', 'Status', 'Total Intake', 'Historical Cutoff Data Available'];
-    const rows = filteredInstitutes.map(item => [item.instituteCode, item.name, item.status, item.totalIntake, item.hasHistoricalCutoff ? 'Yes' : 'No']);
-    const csvCell = value => '"' + String(value ?? '').replace(/"/g, '""') + '"';
-    const csv = [columns, ...rows].map(row => row.map(csvCell).join(',')).join('\r\n');
-    const url = URL.createObjectURL(new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8;' }));
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = 'maharashtra-engineering-institutes-2025-26.csv';
-    document.body.appendChild(link);
-    link.click();
-    link.remove();
-    URL.revokeObjectURL(url);
-  };
-
 
   const compare = async (event) => {
     event.preventDefault();
