@@ -142,44 +142,7 @@ export default function HistoricalCutoffs() {
           <p style={{ color: 'var(--text2)', maxWidth: 760, lineHeight: 1.7 }}>Compare an MHT-CET percentile with the extracted 2025–26 Maharashtra engineering CAP cutoff dataset. Filter by exact seat-category code, CAP stage, and college/course. Only engineering Maharashtra-state percentile records are compared here; pharmacy merit scores and All India records must not be compared to an MHT-CET percentile.</p>
         </div>
 
-        <section className="card" style={{ padding: 24, marginBottom: 24 }} aria-labelledby="hc-directory-title">
-          <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', flexWrap: 'wrap', gap: 12, marginBottom: 16 }}>
-            <div>
-              <h2 id="hc-directory-title" style={{ fontSize: 22, fontWeight: 800, marginBottom: 6 }}>Maharashtra engineering college directory</h2>
-              <p style={{ color: 'var(--text2)', lineHeight: 1.6, margin: 0 }}>Search the official 2025–26 institute directory. Cutoff availability is shown separately; an institute listing does not mean every course/category/round has a published cutoff in our imported dataset.</p>
-            </div>
-            <button type="button" className="btn btn-grad" onClick={exportInstitutesCsv} disabled={!filteredInstitutes.length}>Export college directory (CSV)</button>
-          </div>
-          <div style={{ display: 'grid', gridTemplateColumns: 'minmax(220px, 1fr) auto', gap: 12, alignItems: 'end', marginBottom: 14 }}>
-            <div className="form-group" style={{ margin: 0 }}>
-              <label className="form-label" htmlFor="hc-institute-search">Search college name or institute code</label>
-              <input id="hc-institute-search" style={inputStyle} value={instituteQuery} onChange={e => setInstituteQuery(e.target.value)} placeholder="e.g. Kokan Gyanpeeth or 03198" />
-            </div>
-            <div style={{ color: 'var(--text2)', fontSize: 13, paddingBottom: 12 }}>{instituteLoading ? 'Loading official directory…' : `${filteredInstitutes.length} colleges`}</div>
-          </div>
-          {instituteError && <div role="alert" style={{ color: 'var(--orange)', marginBottom: 14 }}>{instituteError} <a href="https://fe2025.mahacet.org/StaticPages/frmInstituteList" target="_blank" rel="noreferrer">Open official institute list</a></div>}
-          {instituteWarning && <div role="status" style={{ color: 'var(--orange)', background: 'var(--bg2)', padding: 12, borderRadius: 'var(--r3)', marginBottom: 14 }}>{instituteWarning}</div>}
-          {!instituteLoading && !instituteError && filteredInstitutes.length === 0 && <p style={{ color: 'var(--text2)' }}>No institutes match that search. Try a shorter name or the institute code.</p>}
-          {filteredInstitutes.length > 0 && <div style={{ overflowX: 'auto', maxHeight: 440, border: '1px solid var(--border)', borderRadius: 'var(--r3)' }}>
-            <table style={{ width: '100%', borderCollapse: 'collapse', minWidth: 620 }}>
-              <thead><tr>{['Institute code', 'College name', 'Status', 'Historical cutoff data'].map(label => <th key={label} style={{ ...th, position: 'sticky', top: 0, zIndex: 1 }}>{label}</th>)}</tr></thead>
-              <tbody>{filteredInstitutes.map(item => <tr key={item.instituteCode}>
-                <td style={td}>{item.instituteCode}</td>
-                <td style={td}><strong>{item.name}</strong></td>
-                <td style={td}>{item.status}</td>
-                <td style={td}>
-                  <div style={{ color: item.hasHistoricalCutoff ? 'var(--green)' : 'var(--text2)', fontWeight: 700, marginBottom: 8 }}>{item.hasHistoricalCutoff ? 'Records found' : 'No imported cutoff records'}</div>
-                  <button type="button" className="btn btn-grad" style={{ padding: '7px 10px', fontSize: 12, minHeight: 34 }} onClick={() => {
-                    setSearch(item.name);
-                    document.getElementById('hc-search')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                    document.getElementById('hc-search')?.focus({ preventScroll: true });
-                  }}>Use in cutoff search</button>
-                </td>
-              </tr>)}</tbody>
-            </table>
-          </div>}
-          <p style={{ color: 'var(--text3)', fontSize: 12, lineHeight: 1.6, marginTop: 12 }}>Source: <a href="https://fe2025.mahacet.org/StaticPages/frmInstituteList" target="_blank" rel="noreferrer">Maharashtra CET Cell official institute list</a>. Directory data is loaded from the official source when the backend can reach it.</p>
-        </section>
+
 
         <div className="card" style={{ padding: 24, marginBottom: 24 }}>
           <form onSubmit={compare} style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(190px,1fr))', gap: 16, alignItems: 'end' }}>
