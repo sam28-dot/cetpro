@@ -1,6 +1,6 @@
 /**
  * Results.jsx — Prediction results dashboard
- * Loads a prediction by ID, renders Safe/Moderate/Dream cards,
+ * Loads a prediction by ID and groups historical cutoff comparisons,
  * supports filtering, PDF download, share link, and compare.
  */
 
@@ -14,9 +14,9 @@ import { predictionAPI } from '../utils/api';
 import CollegeCard from '../components/predictor/CollegeCard';
 
 const SECTIONS = [
-  { key:'safe',     label:'✅ Safe Colleges',     badge:'badge-safe',     desc:'Your percentile is at least 3 points above the historical cutoff.' },
-  { key:'moderate', label:'🎯 Moderate Colleges', badge:'badge-moderate', desc:'Your percentile is within 4 points below to 3 points above the historical cutoff.' },
-  { key:'dream',    label:'⭐ Dream Colleges',    badge:'badge-dream',    desc:'Your percentile is more than 4 points below the historical cutoff.' },
+  { key:'safe',     label:'At/above historical cutoff', badge:'badge-safe', desc:'Your entered percentile is at least 3 points above the matched historical cutoff. This does not guarantee eligibility or admission.' },
+  { key:'moderate', label:'Near historical cutoff', badge:'badge-moderate', desc:'Your entered percentile is within 4 points below to 3 points above the matched historical cutoff.' },
+  { key:'dream',    label:'Below historical cutoff', badge:'badge-dream', desc:'Your entered percentile is more than 4 points below the matched historical cutoff.' },
 ];
 
 const LOC_OPTS = ['any','mumbai','pune','thane','nagpur','nashik','aurangabad','kolhapur'];
@@ -181,7 +181,7 @@ export default function Results() {
         <div className="card" style={{ padding:16, marginBottom:20, borderLeft:'4px solid var(--accent)' }}>
           <strong>Historical cutoff comparison — not an admission prediction.</strong>
           <div style={{ color:'var(--text2)', fontSize:13, lineHeight:1.6, marginTop:6 }}>
-            Results use imported official 2025–26 CAP Round IV engineering percentile records. Each result retains its official category code. Home-university eligibility, gender-specific seats, fees, placements and admission probability are not inferred where verified data is unavailable.
+            Results compare your entered score against imported 2025–26 CAP records using the metric supported by the selected stream. Each result retains its source category code where available. Home-university eligibility, gender-specific seats, fees, placements and admission probability are not inferred where verified data is unavailable.
           </div>
         </div>
 
