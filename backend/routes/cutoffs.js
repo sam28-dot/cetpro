@@ -5,7 +5,11 @@ const router = express.Router();
 const dataset = require('../data/official-cutoffs-2025-26.json');
 
 const records = Array.isArray(dataset.records) ? dataset.records : [];
-const normalise = (value) => String(value ?? '').trim().toLowerCase().replace(/\\s+/g, ' ').replace(/\\bkokan\\b/g, 'konkan');
+const normalise = (value) => String(value ?? '').normalize('NFKD').replace(/[\\u0300-\\u036f]/g, '').trim().toLowerCase().replace(/\\s+/g, ' ').replace(/\\bkokan\\b/g, 'konkan');
+const normaliseStage = (value) => {
+  const stage = String(value ?? '').trim().toUpperCase().replace(/^STAGE\\s*/, '').replace(/[^IVX0-9]/g, '');
+  return stage;
+};
 
 // GET /api/cutoffs/categories
 // Return only category codes that actually exist in the imported engineering MH percentile records.
@@ -92,7 +96,7 @@ router.get('/compare', (req, res) => {
     normalise(r.categoryCode) === normalise(categoryCode)
   );
 
-  if (stage) filtered = filtered.filter((r) => String(r.stage || '').toUpperCase() === stage);
+  if (stage) filtered = filtered.filter((r) => normaliseStage(r.stage) === normaliseStage(stage));
   if (search) {
     filtered = filtered.filter((r) =>
       [r.college, r.course, r.choiceCode, r.collegeCode]
