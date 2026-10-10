@@ -140,7 +140,7 @@ export default function Predictor() {
             Find Your College
           </h1>
           <p style={{ color:'var(--text2)', fontSize:16 }}>
-            Fill in the details — the more accurate, the better your predictions.
+            Enter your score and preferences to compare with available historical CAP records. This is a reference tool, not an admission guarantee.
           </p>
         </div>
 
@@ -176,8 +176,8 @@ export default function Predictor() {
                   <label className="form-label" style={{ marginBottom: 10, display: 'block' }}>Select Your Stream</label>
                   <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
                     {[
-                      { val: 'engineering', icon: '⚙️', label: 'Engineering', sub: 'CSE, IT, AIML, MECH, EXTC…' },
-                      { val: 'pharmacy',    icon: '💊', label: 'Pharmacy',    sub: 'B.Pharm, Pharm.D, M.Pharm…' },
+                      { val: 'engineering', icon: '⚙️', label: 'Engineering', sub: 'CSE, IT, AI/ML, Mechanical, EXTC…' },
+                      { val: 'pharmacy',    icon: '💊', label: 'Pharmacy',    sub: 'B.Pharm and Pharm.D where records are available' },
                     ].map(opt => (
                       <button key={opt.val} type="button"
                         onClick={() => { setStream(opt.val); setBranches([opt.val === 'pharmacy' ? 'BPHARM' : 'CSE']); }}
@@ -238,7 +238,7 @@ export default function Predictor() {
                     {estPct && (
                       <div style={s.estBadge}>
                         ✨ Estimated Percentile: <strong>~{estPct}</strong>
-                        <span style={{ color:'var(--text3)', marginLeft:6, fontSize:12 }}>(using historical distribution model)</span>
+                        <span style={{ color:'var(--text3)', marginLeft:6, fontSize:12 }}>(rough estimate only — not an official CET percentile)</span>
                       </div>
                     )}
                     {errors.percentile && <span className="form-error">{errors.percentile}</span>}
