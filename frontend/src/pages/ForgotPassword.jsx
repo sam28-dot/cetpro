@@ -63,7 +63,7 @@ export default function ForgotPassword() {
               <div style={{display:'flex',flexDirection:'column',gap:14}}>
                 <div className="form-group">
                   <label className="form-label">6-digit email code</label>
-                  <input className={\`form-input \${error?'error':''}\`} inputMode="numeric" autoComplete="one-time-code" maxLength={6} placeholder="123456" value={otp} onChange={e=>{setOtp(e.target.value.replace(/\D/g,'').slice(0,6));setError('');}} autoFocus />
+                  <input className={"form-input " + (error ? "error" : "")} inputMode="numeric" autoComplete="one-time-code" maxLength={6} placeholder="123456" value={otp} onChange={e=>{setOtp(e.target.value.replace(/\D/g,'').slice(0,6));setError('');}} autoFocus />
                 </div>
                 <div className="form-group">
                   <label className="form-label">New password</label>
@@ -87,7 +87,7 @@ export default function ForgotPassword() {
             <form onSubmit={requestCode} noValidate>
               <div className="form-group" style={{marginBottom:16}}>
                 <label className="form-label">Registered email address</label>
-                <input type="email" className={\`form-input \${error?'error':''}\`} placeholder="you@example.com" value={email} onChange={e=>{setEmail(e.target.value);setError('');}} autoComplete="email" autoFocus />
+                <input type="email" className={"form-input " + (error ? "error" : "")} placeholder="you@example.com" value={email} onChange={e=>{setEmail(e.target.value);setError('');}} autoComplete="email" autoFocus />
                 {error && <span className="form-error" role="alert">{error}</span>}
               </div>
               <button type="submit" className="btn btn-grad btn-lg" disabled={loading} style={{width:'100%'}}>{loading?'Sending code…':'Send Verification Code'}</button>
