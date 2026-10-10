@@ -23,15 +23,15 @@ const FEATURES = [
 
 const HOW_IT_WORKS = [
   { n: '01', title: 'Enter Your Score',         desc: 'Enter your percentile and choose your stream, category, and preferences. Use an official scorecard percentile whenever possible.' },
-  { n: '02', title: 'AI Analyses Your Profile', desc: 'The app compares your entered percentile against the matching imported historical records. It does not establish seat eligibility or admission probability.' },
+  { n: '02', title: 'Compare Historical Records', desc: 'The app compares your entered percentile against the matching imported historical records. It does not establish seat eligibility or admission probability.' },
   { n: '03', title: 'Get Your Personalised List', desc: 'Review the available matching results, compare options, and export a report. Treat every result as a historical reference.' },
 ];
 
 const STATS = [
   { num: '2025–26', label: 'CAP reference year', color: 'var(--accent2)' },
-  { num: '2',     label: 'Streams Covered',       color: 'var(--green)'   },
-  { num: 'Official', label: 'Source documents', color: 'var(--yellow)' },
-  { num: 'Free',  label: 'Always',                color: 'var(--accent3)' },
+  { num: 'MH',    label: 'Maharashtra focus', color: 'var(--green)' },
+  { num: 'CAP', label: 'Historical references', color: 'var(--yellow)' },
+  { num: 'Free',  label: 'To explore', color: 'var(--accent3)' },
 ];
 
 export default function Landing() {
@@ -53,16 +53,13 @@ export default function Landing() {
             </motion.div>
 
             <motion.h1 {...fadeUp(0.08)} style={{ fontFamily: 'var(--font-display)', fontSize: 'clamp(38px,6.5vw,76px)', fontWeight: 800, lineHeight: 1.06, letterSpacing: '-2.5px', marginBottom: 20 }}>
-              Predict Your<br />
-              <span className="grad-text">Dream College</span><br />
-              with Precision
+              Make Your Next<br />
+              <span className="grad-text">College Decision</span><br />
+              with Clarity
             </motion.h1>
 
             <motion.p {...fadeUp(0.16)} style={{ fontSize: 'clamp(16px,2vw,20px)', color: 'var(--text2)', maxWidth: 560, margin: '0 auto 36px', lineHeight: 1.7 }}>
-              A practical MHT-CET college research tool for students
-              willing to pursue <strong style={{ color: 'var(--text)' }}>Engineering</strong> or{' '}
-              <strong style={{ color: 'var(--text)' }}>Pharmacy</strong>. Get your
-              clearer historical comparisons and a more organised shortlist.
+              Explore historical MHT-CET cutoff records, compare available college options, and build a shortlist that is easier to discuss with your family. Clear sources. Clear limitations. Better-informed decisions.
             </motion.p>
 
             <motion.div {...fadeUp(0.22)} style={{ display: 'flex', gap: 12, justifyContent: 'center', flexWrap: 'wrap', marginBottom: 60 }}>
@@ -89,7 +86,7 @@ export default function Landing() {
         <div className="container">
           <div style={{ textAlign: 'center', marginBottom: 52 }}>
             <h2 style={{ fontFamily: 'var(--font-display)', fontSize: 'clamp(26px,3.5vw,40px)', fontWeight: 800, letterSpacing: '-0.5px', marginBottom: 12 }}>Everything You Need to Decide</h2>
-            <p style={{ color: 'var(--text2)', fontSize: 16, maxWidth: 460, margin: '0 auto' }}>From raw percentile to ranked college list — we handle the complexity.</p>
+            <p style={{ color: 'var(--text2)', fontSize: 16, maxWidth: 460, margin: '0 auto' }}>Explore available records, understand the comparison, and make your own informed shortlist.</p>
           </div>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill,minmax(300px,1fr))', gap: 18 }}>
             {FEATURES.map((f, i) => (
@@ -140,7 +137,7 @@ export default function Landing() {
             Your best-fit college is one prediction away.
           </h2>
           <p style={{ fontSize: 16, color: 'rgba(255,255,255,0.75)', maxWidth: 460, margin: '0 auto 32px', lineHeight: 1.7 }}>
-            Join students who made informed decisions instead of guessing.
+            Start with your official percentile and explore historical cutoff references—without confusing comparisons with guarantees.
           </p>
           <Link to={user ? '/predictor' : '/signup'} className="btn btn-lg"
             style={{ background: '#fff', color: 'var(--accent)', fontWeight: 800, display: 'inline-flex' }}>
