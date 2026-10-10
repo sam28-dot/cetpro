@@ -5,6 +5,13 @@ const crypto = require('crypto');
 const mongoose = require('mongoose');
 const Prediction = require('../models/Prediction');
 const { COLLEGE_DB, CUTOFF_DATASET } = require('../data/colleges');
+const officialDataset = require('../data/official-cutoffs-2025-26.json');
+const OFFICIAL_ENGINEERING_SOURCE = 'https://fe2025.mahacet.org/ViewPublicDocument?MenuId=9822';
+const CATEGORY_TO_OFFICIAL_CODE = {
+  OPEN: 'GOPENS', OBC: 'GOBCS', SC: 'GSCS', ST: 'GSTS',
+  'NT-B': 'GNT1S', 'NT-C': 'GNT2S', 'NT-D': 'GNT3S',
+  'VJ-DT': 'GVJS', EWS: 'EWS',
+};
 
 const VALID_CATEGORIES = new Set([
   'OPEN', 'EWS', 'OBC', 'SC', 'ST',
@@ -87,12 +94,33 @@ function getVerifiedCutoff(branch, category) {
 }
 
 function hasVerifiedCutoffs() {
-  return COLLEGE_DB.some((college) =>
-    Object.values(college.branches || {}).some((branch) =>
-      Object.keys(branch.verifiedCutoffs || {}).some(
-        (category) => getVerifiedCutoff(branch, category) !== null
-      )
-    )
+  return Array.isArray(officialDataset.records) && officialDataset.records.some((record) =>
+    record.parsed === true && record.domain === 'engineering' && record.route === 'MH' &&
+    record.bracketMetric === 'merit_percentile' && Object.values(CATEGORY_TO_OFFICIAL_CODE).includes(record.categoryCode)
+  );
+}
+
+function normaliseText(value) {
+  return String(value ?? '').normalize('NFKD').toLowerCase()
+    .replace(/[^a-z0-9]+/g, ' ').trim().replace(/\\s+/g, ' ');
+}
+
+function matchesPreferredBranch(course, preferred) {
+  if (preferred.includes('ANY')) return true;
+  const text = normaliseText(course);
+  const aliases = {
+    CSE: ['computer science', 'computer engineering', 'cse'],
+    IT: ['information technology'],
+    AIML: ['artificial intelligence and machine learning', 'ai and machine learning', 'aiml'],
+    DS: ['data science'],
+    EXTC: ['electronics and telecommunication', 'electronics telecommunications', 'electronics and telecom', 'extc'],
+    MECH: ['mechanical engineering'],
+    CIVIL: ['civil engineering'],
+    ETRX: ['electronics engineering', 'electrical and electronics'],
+    IOT: ['internet of things', 'iot'],
+  };
+  return preferred.some((branch) =>
+    (aliases[branch] || [normaliseText(branch)]).some((alias) => text.includes(normaliseText(alias)))
   );
 }
 
@@ -119,144 +147,93 @@ function calcScore(college, branch) {
 function predictColleges(input = {}) {
   const percentile = parsePercentile(input.percentile);
   const category = normaliseCategory(input.category);
-  const stream = String(input.stream || 'any').trim().toLowerCase();
+  const stream = String(input.stream || 'engineering').trim().toLowerCase();
   const results = EMPTY_RESULTS();
 
-  if (percentile === null) {
-    return {
-      success: false,
-      message: 'Enter a valid MHT-CET percentile from 0 to 100.',
-      results,
-    };
-  }
-
-  if (!VALID_CATEGORIES.has(category)) {
-    return {
-      success: false,
-      message: 'Select a supported admission category.',
-      results,
-    };
-  }
-
-  if (!VALID_STREAMS.has(stream)) {
-    return {
-      success: false,
-      message: 'Select engineering, pharmacy, or any stream.',
-      results,
-    };
+  if (percentile === null) return { success: false, message: 'Enter a valid MHT-CET percentile from 0 to 100.', results };
+  if (!VALID_CATEGORIES.has(category)) return { success: false, message: 'Select a supported admission category.', results };
+  if (!VALID_STREAMS.has(stream)) return { success: false, message: 'Select engineering, pharmacy, or any stream.', results };
+  if (stream !== 'engineering') {
+    return { success: false, dataStatus: 'stream_not_supported_by_percentile_dataset',
+      message: 'Verified percentile-based prediction currently supports Engineering only. Pharmacy records use a different merit metric and cannot safely be compared with MHT-CET percentile.', results };
   }
 
   let preferred = input.preferredBranches ?? ['any'];
-
-  if (typeof preferred === 'string') {
-    preferred = preferred
-      .split(',')
-      .map((value) => value.trim())
-      .filter(Boolean);
-  }
-
+  if (typeof preferred === 'string') preferred = preferred.split(',').map((value) => value.trim()).filter(Boolean);
   if (!Array.isArray(preferred)) preferred = ['any'];
+  preferred = preferred.map((value) => String(value).trim().toUpperCase());
 
-  preferred = preferred.map((value) =>
-    String(value).trim().toUpperCase()
+  const officialCategory = CATEGORY_TO_OFFICIAL_CODE[category];
+  if (!officialCategory) {
+    return { success: false, dataStatus: 'category_not_mapped',
+      message: 'No validated official state-level cutoff mapping is available for this category.', results };
+  }
+
+  const officialRecords = (Array.isArray(officialDataset.records) ? officialDataset.records : []).filter((record) =>
+    record.parsed === true && record.domain === 'engineering' && record.route === 'MH' &&
+    record.bracketMetric === 'merit_percentile' && record.categoryCode === officialCategory &&
+    Number.isFinite(Number(record.bracketValue))
   );
-
-  for (const college of COLLEGE_DB) {
-    const collegeStream = String(
-      college.stream || 'engineering'
-    ).toLowerCase();
-
-    if (stream !== 'any' && collegeStream !== stream) continue;
-
-    if (
-      input.location &&
-      String(input.location).toLowerCase() !== 'any' &&
-      String(college.location || '').toLowerCase() !==
-      String(input.location).trim().toLowerCase()
-    ) {
-      continue;
-    }
-
-    if (
-      input.collegeType &&
-      String(input.collegeType).toLowerCase() !== 'any' &&
-      String(college.type || '').toLowerCase() !==
-      String(input.collegeType).trim().toLowerCase()
-    ) {
-      continue;
-    }
-
-    if (
-      input.maxFees !== undefined &&
-      input.maxFees !== null &&
-      input.maxFees !== '' &&
-      Number.isFinite(Number(input.maxFees)) &&
-      Number(college.fees) > Number(input.maxFees)
-    ) {
-      continue;
-    }
-
-    for (const [branchName, branch] of Object.entries(
-      college.branches || {}
-    )) {
-      if (
-        !preferred.includes('ANY') &&
-        !preferred.includes(branchName.toUpperCase())
-      ) {
-        continue;
-      }
-
-      const cutoff = getVerifiedCutoff(branch, category);
-
-      // Never use legacy illustrative cutoff estimates.
-      if (cutoff === null) continue;
-
-      const gap = Number((percentile - cutoff).toFixed(2));
-
-      const entry = {
-        collegeId: college.id,
-        collegeName: college.name,
-        shortName: college.shortName,
-        location: college.location,
-        stream: collegeStream,
-        branch: branchName,
-        category,
-        studentPercentile: percentile,
-        cutoffPercentile: cutoff,
-        percentileGap: gap,
-        academicYear: CUTOFF_DATASET.academicYear,
-        cutoffRound: CUTOFF_DATASET.targetRound,
-        cutoffSourceVerified: true,
-        cutoffSourceUrl: branch.verifiedCutoffs[category].sourceUrl,
-        score: calcScore(college, branch),
-        fees: college.fees,
-        placement: branch.placement,
-        avgPkg: branch.avgPkg,
-        maxPkg: branch.maxPkg,
-      };
-
-      if (gap >= 3) results.safe.push(entry);
-      else if (gap >= -4) results.moderate.push(entry);
-      else if (gap >= -10) results.dream.push(entry);
-    }
+  if (!officialRecords.length) {
+    return { success: false, dataStatus: 'official_records_not_loaded',
+      message: 'No parsed official engineering percentile records are available for this category in the imported 2025–26 CAP Round IV dataset.', results };
   }
 
-  for (const group of Object.values(results)) {
-    group.sort((a, b) => b.score - a.score);
+  const bestByChoice = new Map();
+  for (const record of officialRecords) {
+    if (!matchesPreferredBranch(record.course, preferred)) continue;
+    const meta = COLLEGE_DB.find((college) => normaliseText(college.name) === normaliseText(record.college));
+    if (input.location && String(input.location).toLowerCase() !== 'any' && meta &&
+        normaliseText(meta.location) !== normaliseText(input.location)) continue;
+    if (input.collegeType && String(input.collegeType).toLowerCase() !== 'any' && meta &&
+        normaliseText(meta.type) !== normaliseText(input.collegeType)) continue;
+    if (input.maxFees !== undefined && input.maxFees !== null && input.maxFees !== '' && meta &&
+        Number.isFinite(Number(meta.fees)) && Number(meta.fees) > Number(input.maxFees)) continue;
+
+    const key = String(record.collegeCode) + '|' + String(record.choiceCode) + '|' + normaliseText(record.course);
+    const previous = bestByChoice.get(key);
+    if (!previous || Number(record.bracketValue) > Number(previous.bracketValue)) bestByChoice.set(key, record);
   }
 
-  const loaded = hasVerifiedCutoffs();
+  for (const record of bestByChoice.values()) {
+    const cutoff = Number(record.bracketValue);
+    const gap = Number((percentile - cutoff).toFixed(2));
+    const meta = COLLEGE_DB.find((college) => normaliseText(college.name) === normaliseText(record.college));
+    const entry = {
+      collegeId: Number(record.collegeCode) || 0,
+      collegeName: record.college,
+      shortName: meta?.shortName || record.college,
+      location: meta?.location || '',
+      stream: 'engineering',
+      branch: record.course,
+      category,
+      officialCategoryCode: record.categoryCode,
+      choiceCode: record.choiceCode,
+      studentPercentile: percentile,
+      cutoffPercentile: cutoff,
+      percentileGap: gap,
+      academicYear: officialDataset.academicYear,
+      cutoffRound: officialDataset.round,
+      cutoffSourceVerified: true,
+      cutoffSourceUrl: OFFICIAL_ENGINEERING_SOURCE,
+      score: 0,
+      fees: meta?.fees ?? null,
+      placement: null,
+      avgPkg: null,
+      maxPkg: null,
+    };
+    if (gap >= 3) results.safe.push(entry);
+    else if (gap >= -4) results.moderate.push(entry);
+    else if (gap >= -10) results.dream.push(entry);
+  }
 
+  for (const group of Object.values(results)) group.sort((a, b) => b.cutoffPercentile - a.cutoffPercentile);
   return {
     success: true,
-    dataStatus: loaded
-      ? 'verified_records_available'
-      : 'official_records_not_loaded',
-    academicYear: CUTOFF_DATASET.academicYear,
-    cutoffRound: CUTOFF_DATASET.targetRound,
-    message: loaded
-      ? 'Results use matching records marked verified from the official Maharashtra CET Cell source.'
-      : 'Prediction is temporarily unavailable: verified 2025-26 CAP cutoff records have not been imported. Legacy estimates are intentionally not used.',
+    dataStatus: 'verified_records_available',
+    academicYear: officialDataset.academicYear,
+    cutoffRound: officialDataset.round,
+    message: 'Results compare your percentile with imported official 2025–26 CAP Round IV engineering cutoffs. These historical comparisons are not admission guarantees; repeated allotment-stage rows are collapsed to the highest cutoff per course.',
     results,
   };
 }
