@@ -11,6 +11,7 @@ const collegeResultSchema = new mongoose.Schema(
     collegeName: { type: String, required: true },
     shortName: { type: String },
     branch: { type: String, required: true },
+    stream: { type: String, enum: ['engineering', 'pharmacy'] },
     location: { type: String },
     tier: { type: Number },
     fees: { type: Number },
