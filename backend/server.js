@@ -35,6 +35,8 @@ const allowedOrigins = [
   process.env.FRONTEND_URL || 'http://localhost:3000',
   'https://cetpredictorpro.vercel.app',
   'https://cetpro-predictor.vercel.app',
+  'https://cetpredictorpro.in',
+  'https://www.cetpredictorpro.in',
 ];
 app.use(cors({
   origin: (origin, cb) => {
