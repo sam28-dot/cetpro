@@ -152,7 +152,14 @@ export default function HistoricalCutoffs() {
                 <td style={td}>{item.instituteCode}</td>
                 <td style={td}><strong>{item.name}</strong></td>
                 <td style={td}>{item.status}</td>
-                <td style={td}><span style={{ color: item.hasHistoricalCutoff ? 'var(--green)' : 'var(--text2)', fontWeight: 700 }}>{item.hasHistoricalCutoff ? 'Records found' : 'Not in imported cutoff records'}</span></td>
+                <td style={td}>
+                  <div style={{ color: item.hasHistoricalCutoff ? 'var(--green)' : 'var(--text2)', fontWeight: 700, marginBottom: 8 }}>{item.hasHistoricalCutoff ? 'Records found' : 'No imported cutoff records'}</div>
+                  <button type="button" className="btn btn-grad" style={{ padding: '7px 10px', fontSize: 12, minHeight: 34 }} onClick={() => {
+                    setSearch(item.name);
+                    document.getElementById('hc-search')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    document.getElementById('hc-search')?.focus({ preventScroll: true });
+                  }}>Use in cutoff search</button>
+                </td>
               </tr>)}</tbody>
             </table>
           </div>}
