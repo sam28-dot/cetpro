@@ -1,0 +1,55 @@
+name: Dependency security remediation
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+  schedule:
+    - cron: "41 3 * * 1"
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  remediate:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        app: [frontend, backend]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+          cache-dependency-path: ${{ matrix.app }}/package-lock.json
+      - name: Install locked dependencies
+        working-directory: ${{ matrix.app }}
+        run: npm ci
+      - name: Apply compatible security fixes
+        working-directory: ${{ matrix.app }}
+        run: npm audit fix || true
+      - name: Verify resulting dependency tree
+        working-directory: ${{ matrix.app }}
+        run: |
+          npm audit --json > audit-report.json || true
+          node -e "const a=require('./audit-report.json'); console.log(JSON.stringify(a.metadata?.vulnerabilities || {}, null, 2));"
+      - name: Create a reviewable security update pull request
+        uses: peter-evans/create-pull-request@v6
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          commit-message: "fix(deps): apply compatible security updates to ${{ matrix.app }}"
+          title: "Security updates: ${{ matrix.app }} dependencies"
+          body: |
+            Automated dependency remediation for the ${{ matrix.app }} application.
+
+            - Applies compatible npm audit fixes to the lockfile.
+            - Leaves major or breaking upgrades for review.
+            - CI must pass before merging.
+          branch: automation/security-${{ matrix.app }}
+          delete-branch: true
+          add-paths: |
+            ${{ matrix.app }}/package.json
+            ${{ matrix.app }}/package-lock.json
