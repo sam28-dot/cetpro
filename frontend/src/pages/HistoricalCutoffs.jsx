@@ -60,8 +60,8 @@ export default function HistoricalCutoffs() {
     const columns = ['College', 'Course', 'Choice Code', 'Category Code', 'Stage', 'Historical Cutoff', 'Your Percentile', 'Difference', 'Metric', 'Academic Year', 'CAP Round'];
     const rows = displayedRecords.map(r => [r.college, r.course, r.choiceCode, r.categoryCode, r.stage, r.bracketValue, meta?.input?.percentile, r.percentileDifference, r.bracketMetric, meta?.academicYear, meta?.round]);
     const csvCell = value => '"' + String(value ?? '').replace(/"/g, '""') + '"';
-    const csv = [columns, ...rows].map(row => row.map(csvCell).join(',')).join('\\r\\n');
-    const url = URL.createObjectURL(new Blob(['\\uFEFF' + csv], { type: 'text/csv;charset=utf-8;' }));
+    const csv = [columns, ...rows].map(row => row.map(csvCell).join(',')).join('\r\n');
+    const url = URL.createObjectURL(new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8;' }));
     const link = document.createElement('a');
     link.href = url;
     link.download = 'historical-cutoffs-2025-26.csv';
