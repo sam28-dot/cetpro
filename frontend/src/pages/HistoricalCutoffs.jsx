@@ -19,6 +19,7 @@ export default function HistoricalCutoffs() {
   const [stage, setStage] = useState('');
   const [search, setSearch] = useState('');
   const [records, setRecords] = useState([]);
+  const [sortBy, setSortBy] = useState('cutoff-desc');
   const [meta, setMeta] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -46,6 +47,28 @@ export default function HistoricalCutoffs() {
     } finally {
       setLoading(false);
     }
+  };
+
+  const displayedRecords = [...records].sort((a, b) => {
+    if (sortBy === 'cutoff-asc') return Number(a.bracketValue) - Number(b.bracketValue);
+    if (sortBy === 'college-asc') return String(a.college).localeCompare(String(b.college));
+    if (sortBy === 'difference-asc') return Number(b.percentileDifference) - Number(a.percentileDifference);
+    return Number(b.bracketValue) - Number(a.bracketValue);
+  });
+
+  const exportCsv = () => {
+    const columns = ['College', 'Course', 'Choice Code', 'Category Code', 'Stage', 'Historical Cutoff', 'Your Percentile', 'Difference', 'Metric', 'Academic Year', 'CAP Round'];
+    const rows = displayedRecords.map(r => [r.college, r.course, r.choiceCode, r.categoryCode, r.stage, r.bracketValue, meta?.input?.percentile, r.percentileDifference, r.bracketMetric, meta?.academicYear, meta?.round]);
+    const csvCell = value => '"' + String(value ?? '').replace(/"/g, '""') + '"';
+    const csv = [columns, ...rows].map(row => row.map(csvCell).join(',')).join('\\r\\n');
+    const url = URL.createObjectURL(new Blob(['\\uFEFF' + csv], { type: 'text/csv;charset=utf-8;' }));
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = 'historical-cutoffs-2025-26.csv';
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+    URL.revokeObjectURL(url);
   };
 
   const inputStyle = { width: '100%', padding: '12px 14px', borderRadius: 'var(--r3)', border: '1px solid var(--border2)', background: 'var(--bg2)', color: 'var(--text)', fontSize: 15 };
@@ -102,11 +125,12 @@ export default function HistoricalCutoffs() {
               <div className="card" style={{ padding: '14px 18px', flex: '1 1 160px' }}><div style={{ color: 'var(--text2)', fontSize: 12 }}>Dataset</div><div style={{ fontSize: 16, fontWeight: 700 }}>{meta.academicYear} · {meta.round}</div></div>
               <div className="card" style={{ padding: '14px 18px', flex: '1 1 160px' }}><div style={{ color: 'var(--text2)', fontSize: 12 }}>Comparison metric</div><div style={{ fontSize: 16, fontWeight: 700 }}>{meta.metric}</div></div>
             </div>
+            {records.length > 0 && <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between', gap: 12, marginBottom: 12 }}><label style={{ display: 'flex', alignItems: 'center', gap: 8, color: 'var(--text2)', fontSize: 13 }} htmlFor="hc-sort">Sort results <select id="hc-sort" style={{ ...inputStyle, width: 'auto', minWidth: 190 }} value={sortBy} onChange={e => setSortBy(e.target.value)}><option value="cutoff-desc">Highest cutoff first</option><option value="cutoff-asc">Lowest cutoff first</option><option value="college-asc">College name A–Z</option><option value="difference-asc">Best percentile difference first</option></select></label><button type="button" className="btn btn-grad" onClick={exportCsv}>Export visible results (CSV)</button><span style={{ color: 'var(--text3)', fontSize: 12 }}>Showing up to {records.length} rows</span></div>}
             {records.length === 0 ? <div className="card" style={{ padding: 24, color: 'var(--text2)' }}>No matching records found. Try a different college name or category code.</div> : (
               <div className="card" style={{ overflowX: 'auto' }}>
                 <table style={{ width: '100%', borderCollapse: 'collapse', minWidth: 700 }}>
                   <thead><tr>{['College / course', 'Seat category', 'Historical cutoff', 'Your difference', 'Historical comparison'].map(label => <th key={label} style={th}>{label}</th>)}</tr></thead>
-                  <tbody>{records.map((record, index) => {
+                  <tbody>{displayedRecords.map((record, index) => {
                     const atOrAbove = Number(record.percentileDifference) >= 0;
                     return <tr key={record.choiceCode || index}>
                       <td style={td}><div style={{ fontWeight: 700 }}>{record.college}</div><div style={{ color: 'var(--text2)', marginTop: 4 }}>{record.course}</div><div style={{ color: 'var(--text3)', fontSize: 11, marginTop: 4 }}>Choice code: {record.choiceCode}</div></td>
