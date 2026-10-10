@@ -29,10 +29,9 @@ const createTransport = () => {
 };
 
 exports.sendPasswordResetEmail = async (email, name, otp) => {
-  const transporter = createTransport();
   const safeName = String(name || 'Student').replace(/[<>]/g, '');
   const founders = 'Samyak Ahiwale, Dipesh Bante, Saad Adhal, and Yash Bonde';
-  await transporter.sendMail({
+  const message = {
     from: process.env.EMAIL_FROM || process.env.SMTP_USER || 'CET Predictor Pro Team',
     to: email,
     subject: 'Your CET Predictor Pro password reset code',
@@ -62,5 +61,31 @@ Security note: Our team will never ask you to share this code.`,
 <p style="margin-bottom:4px">Warm regards,</p><p style="margin-top:0;font-weight:700;color:#25265f">CET Predictor Pro Team</p>
 <div style="padding-top:18px;border-top:1px solid #eceef5;color:#747b90;font-size:12px;line-height:1.7">Founded by ${founders}.<br/>Maharashtra, India</div></div></div>
 <p style="text-align:center;color:#8a90a3;font-size:11px;margin:16px 0">Automated account-security email. Please do not reply with your verification code.</p></div></body></html>`,
-  });
+  };
+
+  // Prefer the HTTPS API in production. Some hosting networks restrict outbound SMTP,
+  // which causes SMTP connections to time out even when credentials are correct.
+  if (process.env.RESEND_API_KEY) {
+    if (!process.env.EMAIL_FROM) {
+      throw new Error('EMAIL_FROM must be set to a sender address verified with Resend.');
+    }
+    const response = await fetch('https://api.resend.com/emails', {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${process.env.RESEND_API_KEY}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(message),
+    });
+    const responseBody = await response.json().catch(() => ({}));
+    if (!response.ok) {
+      const detail = responseBody.message || responseBody.error || `HTTP ${response.status}`;
+      throw new Error(`Resend email API failed: ${detail}`);
+    }
+    console.log('[Password reset email] Accepted by Resend:', responseBody.id || 'message accepted');
+    return responseBody;
+  }
+
+  const transporter = createTransport();
+  await transporter.sendMail(message);
 };
