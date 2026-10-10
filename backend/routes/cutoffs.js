@@ -116,21 +116,17 @@ router.get('/compare', (req, res) => {
     r.domain === 'engineering' && r.route === 'MH' &&
     r.bracketMetric === 'merit_percentile' && r.parsed === true
   );
-  let filtered = baseRecords.filter((r) => normalise(r.categoryCode) === normalise(categoryCode));
+  // A selected seat-category code is a family, not always one literal code:
+  // MH CAP PDFs use S/H/O suffixes for state, home-university and other-university
+  // variants. Search the full family every time so a college isn't accidentally
+  // hidden just because its record uses GOPENH/GOPENO rather than GOPENS.
+  const family = CATEGORY_FAMILIES[categoryCode] || [categoryCode];
+  let filtered = baseRecords.filter((r) =>
+    family.some((code) => normalise(code) === normalise(r.categoryCode))
+  );
 
   if (stage) filtered = filtered.filter((r) => normaliseStage(r.stage) === normaliseStage(stage));
-  if (search) {
-    const exactSearchResults = filtered.filter((r) => matchesSearch(r, search));
-    if (exactSearchResults.length) {
-      filtered = exactSearchResults;
-    } else {
-      const family = CATEGORY_FAMILIES[normalise(categoryCode)] || [normalise(categoryCode)];
-      filtered = baseRecords.filter((r) =>
-        family.some((code) => normalise(code) === normalise(r.categoryCode)) && matchesSearch(r, search) &&
-        (!stage || normaliseStage(r.stage) === normaliseStage(stage))
-      );
-    }
-  }
+  if (search) filtered = filtered.filter((r) => matchesSearch(r, search));
 
   const comparisons = filtered.map((r) => ({
     ...r,
