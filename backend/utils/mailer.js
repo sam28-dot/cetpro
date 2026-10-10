@@ -1,58 +1,83 @@
 /**
  * Mailer Utility
- * Nodemailer setup for transactional emails.
+ * Transactional password-reset email for CET Predictor Pro.
  */
-
 const nodemailer = require('nodemailer');
 
 const createTransport = () => {
-  // In production use real SMTP, in dev use Ethereal
   if (process.env.NODE_ENV === 'production') {
+    if (!process.env.SMTP_HOST || !process.env.SMTP_USER || !process.env.SMTP_PASS) {
+      throw new Error('SMTP is not configured. Set SMTP_HOST, SMTP_USER and SMTP_PASS on the backend host.');
+    }
     return nodemailer.createTransport({
       host: process.env.SMTP_HOST,
-      port: parseInt(process.env.SMTP_PORT) || 587,
-      secure: false, // TLS
-      auth: {
-        user: process.env.SMTP_USER,
-        pass: process.env.SMTP_PASS,
-      },
+      port: parseInt(process.env.SMTP_PORT, 10) || 587,
+      secure: String(process.env.SMTP_SECURE || 'false') === 'true',
+      auth: { user: process.env.SMTP_USER, pass: process.env.SMTP_PASS },
     });
   }
-  // Dev: log to console
   return {
     sendMail: async (opts) => {
       console.log('\n📧 [DEV EMAIL]');
       console.log('To:', opts.to);
       console.log('Subject:', opts.subject);
-      console.log('Body excerpt:', opts.text?.slice(0, 200));
+      console.log('Body excerpt:', opts.text?.slice(0, 300));
       console.log('─────────────────────\n');
       return { messageId: 'dev-' + Date.now() };
     },
   };
 };
 
-exports.sendPasswordResetEmail = async (email, name, resetURL) => {
+exports.sendPasswordResetEmail = async (email, name, otp) => {
   const transporter = createTransport();
+  const safeName = String(name || 'Student').replace(/[<>]/g, '');
+  const founders = 'Samyak Ahiwale, Dipesh Bante, Saad Adhal, and Yash Bonde';
   await transporter.sendMail({
-    from: `"CET Predictor Pro" <${process.env.EMAIL_FROM || 'noreply@cetpredictorpro.in'}>`,
+    from: process.env.EMAIL_FROM || process.env.SMTP_USER || 'CET Predictor Pro Team',
     to: email,
-    subject: 'Reset Your CET Predictor Pro Password',
-    text: `Hi ${name},\n\nYou requested to reset your password.\n\nClick the link below (valid for 1 hour):\n${resetURL}\n\nIf you didn't request this, ignore this email.\n\n— CET Predictor Pro Team`,
-    html: `
-      <div style="font-family:Arial,sans-serif;max-width:560px;margin:0 auto;background:#f9f9f9;padding:40px;border-radius:12px;">
-        <div style="text-align:center;margin-bottom:32px;">
-          <h2 style="color:#6c63ff;font-size:24px;margin:0;">CET Predictor Pro</h2>
-        </div>
-        <h3 style="color:#1a1a2e;font-size:20px;">Reset Your Password</h3>
-        <p style="color:#555;line-height:1.6;">Hi <strong>${name}</strong>,</p>
-        <p style="color:#555;line-height:1.6;">You requested a password reset. Click the button below. This link expires in <strong>1 hour</strong>.</p>
-        <div style="text-align:center;margin:32px 0;">
-          <a href="${resetURL}" style="background:#6c63ff;color:#fff;padding:14px 32px;border-radius:8px;text-decoration:none;font-weight:bold;font-size:16px;">Reset Password</a>
-        </div>
-        <p style="color:#999;font-size:13px;">If you didn't request this, you can safely ignore this email.</p>
-        <hr style="border:none;border-top:1px solid #eee;margin:32px 0;" />
-        <p style="color:#bbb;font-size:12px;text-align:center;">© ${new Date().getFullYear()} CET Predictor Pro · Maharashtra, India</p>
+    subject: 'Your CET Predictor Pro password reset code',
+    text: `Hello ${safeName},
+
+Welcome back to CET Predictor Pro!
+
+We received a request to reset the password for your account. Your one-time verification code is: ${otp}
+
+This code expires in 10 minutes and can be used only once. If you did not request this, you can safely ignore this email and keep your password unchanged.
+
+Thank you for being part of the CET Predictor Pro community. We built this platform to help Maharashtra students explore their college options with more clarity, and we're glad to have you with us.
+
+Warm regards,
+CET Predictor Pro Team
+Founders: ${founders}
+
+Security note: Our team will never ask you to share this code.`,
+    html: `<!doctype html>
+<html><body style="margin:0;background:#f4f6fb;font-family:Arial,sans-serif;color:#172033">
+  <div style="max-width:600px;margin:28px auto;padding:0 14px">
+    <div style="background:#ffffff;border:1px solid #e7eaf2;border-radius:18px;overflow:hidden">
+      <div style="padding:28px 30px;background:#171b36;color:#fff">
+        <div style="font-size:12px;letter-spacing:2px;text-transform:uppercase;color:#c9ccff">Maharashtra • Built for students</div>
+        <h1 style="margin:10px 0 0;font-size:26px">CET Predictor Pro</h1>
       </div>
-    `,
+      <div style="padding:30px">
+        <p style="font-size:16px">Hello <strong>${safeName}</strong>,</p>
+        <p style="line-height:1.7;color:#475169">Welcome back! We received a request to reset your CET Predictor Pro account password. Use the verification code below to continue.</p>
+        <div style="margin:26px 0;padding:20px;text-align:center;border-radius:12px;background:#f0f1ff;border:1px dashed #8886f7">
+          <div style="font-size:12px;color:#555b83;text-transform:uppercase;letter-spacing:2px">Your one-time code</div>
+          <div style="font-size:34px;letter-spacing:9px;font-weight:800;color:#3935a8;margin-top:10px">${otp}</div>
+          <div style="font-size:12px;color:#646b83;margin-top:10px">Expires in 10 minutes • One use only</div>
+        </div>
+        <p style="line-height:1.7;color:#475169">If you did not request this change, you can safely ignore this email. Your password will remain unchanged. For your security, never share this code with anyone.</p>
+        <p style="line-height:1.7;color:#475169">Thank you for being part of our community. We hope CET Predictor Pro helps you plan your next academic step with greater confidence.</p>
+        <p style="margin-bottom:4px">Warm regards,</p>
+        <p style="margin-top:0;font-weight:700;color:#25265f">CET Predictor Pro Team</p>
+        <div style="padding-top:18px;border-top:1px solid #eceef5;color:#747b90;font-size:12px;line-height:1.7">
+          Founded by ${founders}.<br/>Maharashtra, India
+        </div>
+      </div>
+    </div>
+    <p style="text-align:center;color:#8a90a3;font-size:11px;margin:16px 0">This is an automated account-security email. Please do not reply with your verification code.</p>
+  </div>
+</body></html>`,
   });
 };
