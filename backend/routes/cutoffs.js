@@ -5,7 +5,7 @@ const router = express.Router();
 const dataset = require('../data/official-cutoffs-2025-26.json');
 
 const records = Array.isArray(dataset.records) ? dataset.records : [];
-const normalise = (value) => String(value ?? '').trim().toLowerCase();
+const normalise = (value) => String(value ?? '').trim().toLowerCase().replace(/\\s+/g, ' ').replace(/\\bkokan\\b/g, 'konkan');
 
 // GET /api/cutoffs
 // Read-only access to imported official CAP Round IV records.
