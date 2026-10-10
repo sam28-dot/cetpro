@@ -63,6 +63,32 @@ Security note: Our team will never ask you to share this code.`,
 <p style="text-align:center;color:#8a90a3;font-size:11px;margin:16px 0">Automated account-security email. Please do not reply with your verification code.</p></div></body></html>`,
   };
 
+  // Optional Google-only HTTPS bridge. This uses GmailApp from a Google Apps
+  // Script Web App, avoiding Render Free's blocked SMTP ports.
+  if (process.env.GOOGLE_APPS_SCRIPT_URL) {
+    if (!process.env.GOOGLE_APPS_SCRIPT_SECRET) {
+      throw new Error('Google mail bridge is configured but GOOGLE_APPS_SCRIPT_SECRET is missing.');
+    }
+    const response = await fetch(process.env.GOOGLE_APPS_SCRIPT_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        secret: process.env.GOOGLE_APPS_SCRIPT_SECRET,
+        to: message.to,
+        subject: message.subject,
+        text: message.text,
+        html: message.html,
+        fromName: 'CET Predictor Pro Team',
+      }),
+      signal: AbortSignal.timeout(20000),
+    });
+    const result = await response.json().catch(() => ({}));
+    if (!response.ok || result.ok !== true) {
+      throw new Error(result.error || `Google mail bridge failed (HTTP ${response.status}).`);
+    }
+    return;
+  }
+
   const transporter = createTransport();
   await transporter.sendMail(message);
 };
