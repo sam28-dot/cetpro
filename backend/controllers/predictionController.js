@@ -118,23 +118,32 @@ function normaliseText(value) {
 function matchesPreferredBranch(course, preferred) {
   if (preferred.includes('ANY')) return true;
   const text = normaliseText(course);
-  const aliases = {
-    CSE: ['computer science', 'computer engineering', 'cse'],
-    IT: ['information technology'],
-    AIML: ['artificial intelligence and machine learning', 'ai and machine learning', 'aiml'],
-    DS: ['data science'],
-    EXTC: ['electronics and telecommunication', 'electronics telecommunications', 'electronics and telecom', 'extc'],
-    MECH: ['mechanical engineering'],
-    CIVIL: ['civil engineering'],
-    ETRX: ['electronics engineering', 'electrical and electronics'],
-    IOT: ['internet of things', 'iot'],
-    BPHARM: ['b pharmacy', 'b pharm', 'bachelor of pharmacy', 'pharmacy'],
-    PHARMD: ['pharm d', 'pharm d doctor of pharmacy', 'doctor of pharmacy'],
-    MPHARM: ['m pharmacy', 'm pharm', 'master of pharmacy'],
-  };
-  return preferred.some((branch) =>
-    (aliases[branch] || [normaliseText(branch)]).some((alias) => text.includes(normaliseText(alias)))
-  );
+  return preferred.some((branch) => {
+    if (branch === 'BPHARM') {
+      // The CAP dataset labels the B.Pharm course simply as "Pharmacy".
+      return text === 'pharmacy' || text.includes('b pharmacy') ||
+        text.includes('b pharm') || text.includes('bachelor of pharmacy');
+    }
+    if (branch === 'PHARMD') {
+      return text.includes('pharm d') || text.includes('doctor of pharmacy');
+    }
+    if (branch === 'MPHARM') {
+      return text.includes('m pharmacy') || text.includes('m pharm') ||
+        text.includes('master of pharmacy');
+    }
+    const aliases = {
+      CSE: ['computer science', 'computer engineering', 'cse'],
+      IT: ['information technology'],
+      AIML: ['artificial intelligence and machine learning', 'ai and machine learning', 'aiml'],
+      DS: ['data science'],
+      EXTC: ['electronics and telecommunication', 'electronics telecommunications', 'electronics and telecom', 'extc'],
+      MECH: ['mechanical engineering'],
+      CIVIL: ['civil engineering'],
+      ETRX: ['electronics engineering', 'electrical and electronics'],
+      IOT: ['internet of things', 'iot'],
+    };
+    return (aliases[branch] || [normaliseText(branch)]).some((alias) => text.includes(normaliseText(alias)));
+  });
 }
 
 function findCollegeMetadata(officialName) {
