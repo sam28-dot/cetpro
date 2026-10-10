@@ -330,6 +330,7 @@ function toStoredResults(results) {
       collegeName: item.collegeName,
       shortName: item.shortName,
       branch: item.branch,
+      stream: item.stream,
       location: item.location,
       tier: item.tier,
       fees: item.fees,
