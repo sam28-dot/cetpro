@@ -6,7 +6,10 @@ const mongoose = require('mongoose');
 const Prediction = require('../models/Prediction');
 const { COLLEGE_DB, CUTOFF_DATASET } = require('../data/colleges');
 const officialDataset = require('../data/official-cutoffs-2025-26.json');
-const OFFICIAL_ENGINEERING_SOURCE = 'https://fe2025.mahacet.org/ViewPublicDocument?MenuId=9822';
+const OFFICIAL_SOURCES = {
+  engineering: 'https://fe2025.mahacet.org/ViewPublicDocument?MenuId=9822',
+  pharmacy: 'https://ph2025.mahacet.org/ViewPublicDocument?MenuId=1747',
+};
 const CATEGORY_TO_OFFICIAL_CODE = {
   OPEN: ['GOPENS', 'GOPENH', 'GOPENO'],
   OBC: ['GOBCS', 'GOBCH', 'GOBCO'],
@@ -16,7 +19,8 @@ const CATEGORY_TO_OFFICIAL_CODE = {
   'NT-C': ['GNT2S', 'GNT2H', 'GNT2O'],
   'NT-D': ['GNT3S', 'GNT3H', 'GNT3O'],
   'VJ-DT': ['GVJS', 'GVJH', 'GVJO'],
-  EWS: ['EWS', 'GEWS'],
+  SBC: ['GSBCS', 'GSBCH', 'GSBCO'],
+  EWS: ['EWS', 'EWSH', 'EWSO', 'GEWS', 'GSEWS'],
 };
 
 const VALID_CATEGORIES = new Set([
@@ -124,10 +128,63 @@ function matchesPreferredBranch(course, preferred) {
     CIVIL: ['civil engineering'],
     ETRX: ['electronics engineering', 'electrical and electronics'],
     IOT: ['internet of things', 'iot'],
+    BPHARM: ['b pharmacy', 'b pharm', 'bachelor of pharmacy', 'pharmacy'],
+    PHARMD: ['pharm d', 'pharm d doctor of pharmacy', 'doctor of pharmacy'],
+    MPHARM: ['m pharmacy', 'm pharm', 'master of pharmacy'],
   };
   return preferred.some((branch) =>
     (aliases[branch] || [normaliseText(branch)]).some((alias) => text.includes(normaliseText(alias)))
   );
+}
+
+function findCollegeMetadata(officialName) {
+  const target = normaliseText(officialName);
+  const exact = COLLEGE_DB.find((college) =>
+    normaliseText(college.name) === target ||
+    normaliseText(college.shortName) === target
+  );
+  if (exact) return exact;
+
+  const aliases = {
+    'veermata jijabai technological institute': ['vjti'],
+    'college of engineering pune': ['coep', 'coep technologic university'],
+    'sardar patel institute of technology': ['spit'],
+    'konkan gyanpeeth college of engineering karjat': ['kokan gyanpeth college of engineering karjat'],
+  };
+  for (const [fullName, shortNames] of Object.entries(aliases)) {
+    if (target.includes(normaliseText(fullName)) || shortNames.some((name) => target.includes(normaliseText(name)))) {
+      const match = COLLEGE_DB.find((college) =>
+        normaliseText(college.name).includes(normaliseText(fullName)) ||
+        shortNames.includes(normaliseText(college.shortName))
+      );
+      if (match) return match;
+    }
+  }
+
+  const targetTokens = target.split(' ').filter((token) =>
+    token.length > 2 && !['college', 'engineering', 'institute', 'technology', 'technological', 'of', 'the'].includes(token)
+  );
+  let best = null;
+  let bestRatio = 0;
+  for (const college of COLLEGE_DB) {
+    const candidate = normaliseText(college.name);
+    const candidateTokens = candidate.split(' ').filter((token) =>
+      token.length > 2 && !['college', 'engineering', 'institute', 'technology', 'technological', 'of', 'the'].includes(token)
+    );
+    if (!targetTokens.length || !candidateTokens.length) continue;
+    const overlap = targetTokens.filter((token) => candidateTokens.includes(token)).length;
+    const ratio = overlap / Math.max(targetTokens.length, candidateTokens.length);
+    if (ratio > bestRatio) { bestRatio = ratio; best = college; }
+  }
+  return bestRatio >= 0.6 ? best : null;
+}
+
+function findBranchMetadata(college, officialCourse) {
+  if (!college || !college.branches) return null;
+  for (const [key, branch] of Object.entries(college.branches)) {
+    if (matchesPreferredBranch(officialCourse, [key])) return branch;
+  }
+  return null;
 }
 
 function calcScore(college, branch) {
@@ -159,9 +216,8 @@ function predictColleges(input = {}) {
   if (percentile === null) return { success: false, message: 'Enter a valid MHT-CET percentile from 0 to 100.', results };
   if (!VALID_CATEGORIES.has(category)) return { success: false, message: 'Select a supported admission category.', results };
   if (!VALID_STREAMS.has(stream)) return { success: false, message: 'Select engineering, pharmacy, or any stream.', results };
-  if (stream !== 'engineering') {
-    return { success: false, dataStatus: 'stream_not_supported_by_percentile_dataset',
-      message: 'Verified percentile-based prediction currently supports Engineering only. Pharmacy records use a different merit metric and cannot safely be compared with MHT-CET percentile.', results };
+  if (!['engineering', 'pharmacy'].includes(stream)) {
+    return { success: false, dataStatus: 'stream_not_supported', message: 'Select Engineering or Pharmacy.', results };
   }
 
   let preferred = input.preferredBranches ?? ['any'];
@@ -175,20 +231,24 @@ function predictColleges(input = {}) {
       message: 'No validated official state-level cutoff mapping is available for this category.', results };
   }
 
+  const expectedDomain = stream;
+  // Maharashtra pharmacy CAP Round IV records publish the MH candidates' MHT-CET
+  // merit score. All-India pharmacy rows use NEET and are intentionally excluded.
+  const expectedMetric = stream === 'pharmacy' ? 'merit_score' : 'merit_percentile';
   const officialRecords = (Array.isArray(officialDataset.records) ? officialDataset.records : []).filter((record) =>
-    record.parsed === true && record.domain === 'engineering' && record.route === 'MH' &&
-    record.bracketMetric === 'merit_percentile' && officialCategory.includes(record.categoryCode) &&
+    record.parsed === true && record.domain === expectedDomain && record.route === 'MH' &&
+    record.bracketMetric === expectedMetric && officialCategory.includes(record.categoryCode) &&
     Number.isFinite(Number(record.bracketValue))
   );
   if (!officialRecords.length) {
     return { success: false, dataStatus: 'official_records_not_loaded',
-      message: 'No parsed official engineering percentile records are available for this category in the imported 2025–26 CAP Round IV dataset.', results };
+      message: `No parsed official ${stream} CAP Round IV records are available for this category in the imported 2025–26 dataset.`, results };
   }
 
   const bestByChoice = new Map();
   for (const record of officialRecords) {
     if (!matchesPreferredBranch(record.course, preferred)) continue;
-    const meta = COLLEGE_DB.find((college) => normaliseText(college.name) === normaliseText(record.college));
+    const meta = findCollegeMetadata(record.college);
     if (input.location && String(input.location).toLowerCase() !== 'any' &&
         (!meta || normaliseText(meta.location) !== normaliseText(input.location))) continue;
     if (input.collegeType && String(input.collegeType).toLowerCase() !== 'any' &&
@@ -204,13 +264,14 @@ function predictColleges(input = {}) {
   for (const record of bestByChoice.values()) {
     const cutoff = Number(record.bracketValue);
     const gap = Number((percentile - cutoff).toFixed(2));
-    const meta = COLLEGE_DB.find((college) => normaliseText(college.name) === normaliseText(record.college));
+    const meta = findCollegeMetadata(record.college);
+    const branchMeta = findBranchMetadata(meta, record.course);
     const entry = {
       collegeId: Number(record.collegeCode) || 0,
       collegeName: record.college,
       shortName: meta?.shortName || record.college,
       location: meta?.location || '',
-      stream: 'engineering',
+      stream,
       branch: record.course,
       category,
       officialCategoryCode: record.categoryCode,
@@ -221,12 +282,16 @@ function predictColleges(input = {}) {
       academicYear: officialDataset.academicYear,
       cutoffRound: officialDataset.round,
       cutoffSourceVerified: true,
-      cutoffSourceUrl: OFFICIAL_ENGINEERING_SOURCE,
-      score: 0,
+      cutoffSourceUrl: OFFICIAL_SOURCES[stream],
+      score: meta && branchMeta ? calcScore(meta, branchMeta) : 0,
+      tier: meta?.tier ?? null,
       fees: meta?.fees ?? null,
-      placement: null,
-      avgPkg: null,
-      maxPkg: null,
+      placement: branchMeta?.placement ?? null,
+      avgPkg: branchMeta?.avgPkg ?? null,
+      maxPkg: branchMeta?.maxPkg ?? null,
+      autonomous: meta?.autonomous ?? null,
+      type: meta?.type ?? null,
+      nirf: meta?.nirf ?? null,
     };
     if (gap >= 3) results.safe.push(entry);
     else if (gap >= -4) results.moderate.push(entry);
@@ -239,7 +304,7 @@ function predictColleges(input = {}) {
     dataStatus: 'verified_records_available',
     academicYear: officialDataset.academicYear,
     cutoffRound: officialDataset.round,
-    message: 'Results compare your percentile with imported official 2025–26 CAP Round IV engineering cutoffs. These historical comparisons are not admission guarantees; repeated allotment-stage rows are collapsed to the highest cutoff per course.',
+    message: `Results compare your entered MHT-CET percentile with imported official 2025–26 CAP Round IV ${stream} cutoffs for Maharashtra candidates. These historical comparisons are not admission guarantees; repeated allotment-stage rows are collapsed to the highest cutoff per course. Fees and placement figures appear only where the college metadata database contains values.`,
     results,
   };
 }
