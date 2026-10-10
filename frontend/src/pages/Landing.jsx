@@ -49,7 +49,7 @@ export default function Landing() {
 
             <motion.div {...fadeUp(0)} style={{ display: 'inline-flex', alignItems: 'center', gap: 8, padding: '6px 16px', borderRadius: 99, background: 'rgba(108,99,255,0.1)', border: '1px solid rgba(108,99,255,0.22)', fontSize: 13, fontWeight: 500, color: 'var(--accent2)', marginBottom: 28 }}>
               <span className="pulse" style={{ width: 7, height: 7, borderRadius: '50%', background: 'var(--accent2)', display: 'inline-block', flexShrink: 0 }} />
-              AI-Powered · Engineering &amp; Pharmacy · MHT-CET 2024 Data
+              AI-Powered · Engineering &amp; Pharmacy · MHT-CET 2025-26 Data
             </motion.div>
 
             <motion.h1 {...fadeUp(0.08)} style={{ fontFamily: 'var(--font-display)', fontSize: 'clamp(38px,6.5vw,76px)', fontWeight: 800, lineHeight: 1.06, letterSpacing: '-2.5px', marginBottom: 20 }}>
