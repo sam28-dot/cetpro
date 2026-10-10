@@ -27,6 +27,7 @@ export default function HistoricalCutoffs() {
   const [instituteQuery, setInstituteQuery] = useState('');
   const [instituteLoading, setInstituteLoading] = useState(true);
   const [instituteError, setInstituteError] = useState('');
+  const [instituteWarning, setInstituteWarning] = useState('');
 
   useEffect(() => {
     let active = true;
@@ -35,6 +36,7 @@ export default function HistoricalCutoffs() {
         if (!active) return;
         if (!data.success) throw new Error(data.message || 'Unable to load the official institute directory.');
         setInstitutes(data.institutes || []);
+        setInstituteWarning(data.warning || '');
       })
       .catch(err => {
         if (active) setInstituteError(err.response?.data?.message || err.message || 'Unable to load the official institute directory.');
@@ -141,6 +143,7 @@ export default function HistoricalCutoffs() {
             <div style={{ color: 'var(--text2)', fontSize: 13, paddingBottom: 12 }}>{instituteLoading ? 'Loading official directory…' : `${filteredInstitutes.length} colleges`}</div>
           </div>
           {instituteError && <div role="alert" style={{ color: 'var(--orange)', marginBottom: 14 }}>{instituteError} <a href="https://fe2025.mahacet.org/StaticPages/frmInstituteList" target="_blank" rel="noreferrer">Open official institute list</a></div>}
+          {instituteWarning && <div role="status" style={{ color: 'var(--orange)', background: 'var(--bg2)', padding: 12, borderRadius: 'var(--r3)', marginBottom: 14 }}>{instituteWarning}</div>}
           {!instituteLoading && !instituteError && filteredInstitutes.length === 0 && <p style={{ color: 'var(--text2)' }}>No institutes match that search. Try a shorter name or the institute code.</p>}
           {filteredInstitutes.length > 0 && <div style={{ overflowX: 'auto', maxHeight: 440, border: '1px solid var(--border)', borderRadius: 'var(--r3)' }}>
             <table style={{ width: '100%', borderCollapse: 'collapse', minWidth: 620 }}>
