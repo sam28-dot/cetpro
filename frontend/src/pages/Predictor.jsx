@@ -74,7 +74,7 @@ export default function Predictor() {
     const e = {};
     if (step === 0) {
       const p = parseFloat(percentile);
-      if (!p || isNaN(p) || p < 0 || p > 100) e.percentile = 'Enter a valid percentile between 0 and 100';
+      if (Number.isNaN(p) || p < 0 || p > 100) e.percentile = 'Enter a valid percentile between 0 and 100';
     }
     setErrors(e);
     return Object.keys(e).length === 0;
@@ -176,7 +176,7 @@ export default function Predictor() {
                 </div>
 
                 <div className="form-group">
-                  <label className="form-label">Official MHT-CET Percentile (0–100)</label>
+                  <label className="form-label">{stream === 'pharmacy' ? 'Pharmacy CAP merit score (0–100)' : 'Official MHT-CET Percentile (0–100)'}</label>
                   <input type="number" className={`form-input ${errors.percentile?'error':''}`}
                     placeholder="e.g. 94.50" value={percentile} min="0" max="100" step="0.01"
                     onChange={e => { setPercentile(e.target.value); setErrors({}); }}
@@ -185,7 +185,7 @@ export default function Predictor() {
                   />
                   {errors.percentile && <span className="form-error">{errors.percentile}</span>}
                   <p style={{ color:'var(--text2)', fontSize:13, lineHeight:1.6, marginTop:10 }}>
-                    Use the percentile printed on your official scorecard. Raw marks cannot be converted reliably without the exam session’s normalization data.
+                    {stream === 'pharmacy' ? 'Enter the merit score used by the imported pharmacy CAP record. Do not substitute an engineering percentile.' : 'Use the percentile printed on your official scorecard. Raw marks cannot be converted reliably without the exam session’s normalization data.'}
                   </p>
                 </div>
               </div>
