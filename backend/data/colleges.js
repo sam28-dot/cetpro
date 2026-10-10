@@ -1,12 +1,33 @@
+'use strict';
+
 /**
- * colleges.js — Master college database
- * 25 Maharashtra engineering colleges, 5-year CAP round cutoff data per branch per category.
- * Source: DTE Maharashtra CAP allotment lists 2019-2024 (approximate / illustrative).
+ * MHT CET Predictor Pro — college metadata.
+ * IMPORTANT: legacy `cutoffs` arrays are illustrative estimates from the original
+ * database and MUST NOT be represented as verified official CAP cutoffs.
+ * Only `verifiedCutoffs` records meeting the controller's validation rules are
+ * used for verified predictions. Official data has not yet been imported.
  */
 
+// Kept temporarily for backwards compatibility with any older imports.
+// Do not use these adjustments to estimate category cutoffs.
 const CATEGORY_ADJUSTMENTS = {
   OPEN: 0, EWS: 5, OBC: 8, 'NT-B': 10, 'NT-C': 10, 'NT-D': 10,
   'VJ-DT': 12, SBC: 10, SC: 18, ST: 25,
+};
+
+const CUTOFF_DATASET = {
+  academicYear: '2025-26',
+  targetRound: 'CAP Round IV',
+  status: 'official_records_not_loaded',
+  isOfficialDataLoaded: false,
+  sources: {
+    engineering: 'https://fe2025.mahacet.org/StaticPages/HomePage',
+    pharmacy: 'https://ph2025.mahacet.org/StaticPages/HomePage',
+    engineeringCAPRoundIVMH: 'https://fe2025.mahacet.org/ViewPublicDocument?MenuId=9822',
+    engineeringCAPRoundIVAI: 'https://fe2025.mahacet.org/ViewPublicDocument?MenuId=9823',
+    pharmacyCAPRoundIVMH: 'https://ph2025.mahacet.org/ViewPublicDocument?MenuId=1747',
+    pharmacyCAPRoundIVAI: 'https://ph2025.mahacet.org/ViewPublicDocument?MenuId=1748',
+  },
 };
 
 const COLLEGE_DB = [
@@ -409,4 +430,4 @@ const COLLEGE_DB = [
   },
 ];
 
-module.exports = { COLLEGE_DB, CATEGORY_ADJUSTMENTS };
+module.exports = { COLLEGE_DB, CATEGORY_ADJUSTMENTS, CUTOFF_DATASET };
