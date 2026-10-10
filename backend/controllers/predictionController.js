@@ -8,9 +8,15 @@ const { COLLEGE_DB, CUTOFF_DATASET } = require('../data/colleges');
 const officialDataset = require('../data/official-cutoffs-2025-26.json');
 const OFFICIAL_ENGINEERING_SOURCE = 'https://fe2025.mahacet.org/ViewPublicDocument?MenuId=9822';
 const CATEGORY_TO_OFFICIAL_CODE = {
-  OPEN: 'GOPENS', OBC: 'GOBCS', SC: 'GSCS', ST: 'GSTS',
-  'NT-B': 'GNT1S', 'NT-C': 'GNT2S', 'NT-D': 'GNT3S',
-  'VJ-DT': 'GVJS', EWS: 'EWS',
+  OPEN: ['GOPENS', 'GOPENH', 'GOPENO'],
+  OBC: ['GOBCS', 'GOBCH', 'GOBCO'],
+  SC: ['GSCS', 'GSCH', 'GSCO'],
+  ST: ['GSTS', 'GSTH', 'GSTO'],
+  'NT-B': ['GNT1S', 'GNT1H', 'GNT1O'],
+  'NT-C': ['GNT2S', 'GNT2H', 'GNT2O'],
+  'NT-D': ['GNT3S', 'GNT3H', 'GNT3O'],
+  'VJ-DT': ['GVJS', 'GVJH', 'GVJO'],
+  EWS: ['EWS', 'GEWS'],
 };
 
 const VALID_CATEGORIES = new Set([
@@ -96,7 +102,7 @@ function getVerifiedCutoff(branch, category) {
 function hasVerifiedCutoffs() {
   return Array.isArray(officialDataset.records) && officialDataset.records.some((record) =>
     record.parsed === true && record.domain === 'engineering' && record.route === 'MH' &&
-    record.bracketMetric === 'merit_percentile' && Object.values(CATEGORY_TO_OFFICIAL_CODE).includes(record.categoryCode)
+    record.bracketMetric === 'merit_percentile' && Object.values(CATEGORY_TO_OFFICIAL_CODE).some((codes) => codes.includes(record.categoryCode))
   );
 }
 
@@ -171,7 +177,7 @@ function predictColleges(input = {}) {
 
   const officialRecords = (Array.isArray(officialDataset.records) ? officialDataset.records : []).filter((record) =>
     record.parsed === true && record.domain === 'engineering' && record.route === 'MH' &&
-    record.bracketMetric === 'merit_percentile' && record.categoryCode === officialCategory &&
+    record.bracketMetric === 'merit_percentile' && officialCategory.includes(record.categoryCode) &&
     Number.isFinite(Number(record.bracketValue))
   );
   if (!officialRecords.length) {
