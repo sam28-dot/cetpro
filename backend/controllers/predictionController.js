@@ -189,10 +189,10 @@ function predictColleges(input = {}) {
   for (const record of officialRecords) {
     if (!matchesPreferredBranch(record.course, preferred)) continue;
     const meta = COLLEGE_DB.find((college) => normaliseText(college.name) === normaliseText(record.college));
-    if (input.location && String(input.location).toLowerCase() !== 'any' && meta &&
-        normaliseText(meta.location) !== normaliseText(input.location)) continue;
-    if (input.collegeType && String(input.collegeType).toLowerCase() !== 'any' && meta &&
-        normaliseText(meta.type) !== normaliseText(input.collegeType)) continue;
+    if (input.location && String(input.location).toLowerCase() !== 'any' &&
+        (!meta || normaliseText(meta.location) !== normaliseText(input.location))) continue;
+    if (input.collegeType && String(input.collegeType).toLowerCase() !== 'any' &&
+        (!meta || normaliseText(meta.type) !== normaliseText(input.collegeType))) continue;
     if (input.maxFees !== undefined && input.maxFees !== null && input.maxFees !== '' && meta &&
         Number.isFinite(Number(meta.fees)) && Number(meta.fees) > Number(input.maxFees)) continue;
 
