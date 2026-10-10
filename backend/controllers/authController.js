@@ -111,6 +111,8 @@ exports.forgotPassword = async (req, res, next) => {
     try {
       await sendPasswordResetEmail(user.email, user.name, otp);
     } catch (emailErr) {
+      // Keep provider details in backend logs for diagnosis; never expose them to the client.
+      console.error('[Password reset email] Delivery failed:', emailErr.message);
       user.passwordResetToken = undefined;
       user.passwordResetExpires = undefined;
       await user.save({ validateBeforeSave: false });
