@@ -12,6 +12,7 @@ import './navbar.css';
 
 const NAV_LINKS = [
   { to: '/',          label: 'Home',      authOnly: false },
+  { to: '/historical-cutoffs', label: 'Cutoffs', authOnly: false },
   { to: '/predictor', label: 'Predict',   authOnly: true  },
   { to: '/dashboard', label: 'Dashboard', authOnly: true  },
   { to: '/about',     label: 'About',     authOnly: false },
