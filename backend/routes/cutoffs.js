@@ -126,7 +126,7 @@ router.get('/compare', (req, res) => {
     } else {
       const family = CATEGORY_FAMILIES[normalise(categoryCode)] || [normalise(categoryCode)];
       filtered = baseRecords.filter((r) =>
-        family.includes(normalise(r.categoryCode)) && matchesSearch(r, search) &&
+        family.some((code) => normalise(code) === normalise(r.categoryCode)) && matchesSearch(r, search) &&
         (!stage || normaliseStage(r.stage) === normaliseStage(stage))
       );
     }
