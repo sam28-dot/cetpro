@@ -134,7 +134,7 @@ export default function Results() {
 
     doc.autoTable({
       startY: 34,
-      head: [['College','Branch','Type','Cutoff','Fees/yr','Placement','Avg Pkg','Score','Category']],
+      head: [['College','Branch','Type','Historical Cutoff','Fees/yr','Placement','Avg Pkg','Score','Cutoff Comparison']],
       body: all.map(r => [
         r.collegeName,
         r.branch,
@@ -144,7 +144,7 @@ export default function Results() {
         (r.placementRate != null ? `${r.placementRate}%` : '—'),
         (r.avgPackage != null ? `₹${r.avgPackage}L` : '—'),
         r.score,
-        r.category?.toUpperCase(),
+        ({ safe: 'At/above historical cutoff', moderate: 'Near historical cutoff', dream: 'Below historical cutoff' }[r.category] || 'Historical comparison'),
       ]),
       styles: { fontSize:8, cellPadding:4 },
       headStyles: { fillColor:[108,99,255], textColor:255, fontStyle:'bold' },
