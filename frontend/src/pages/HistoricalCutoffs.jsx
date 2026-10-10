@@ -16,6 +16,7 @@ const CATEGORIES = [
 export default function HistoricalCutoffs() {
   const [percentile, setPercentile] = useState('95');
   const [categoryCode, setCategoryCode] = useState('GOPENS');
+  const [stage, setStage] = useState('');
   const [search, setSearch] = useState('');
   const [records, setRecords] = useState([]);
   const [meta, setMeta] = useState(null);
@@ -35,7 +36,7 @@ export default function HistoricalCutoffs() {
     setMeta(null);
     try {
       const { data } = await api.get('/cutoffs/compare', {
-        params: { percentile: value, categoryCode, ...(search.trim() ? { search: search.trim() } : {}) },
+        params: { percentile: value, categoryCode, ...(stage ? { stage } : {}), ...(search.trim() ? { search: search.trim() } : {}) },
       });
       if (!data.success) throw new Error(data.message || 'Could not load historical cutoffs.');
       setRecords(data.records || []);
@@ -57,7 +58,7 @@ export default function HistoricalCutoffs() {
         <div style={{ marginBottom: 28 }}>
           <div style={{ color: 'var(--accent2)', fontWeight: 700, fontSize: 12, letterSpacing: '0.12em', textTransform: 'uppercase', marginBottom: 8 }}>Official historical data</div>
           <h1 style={{ fontSize: 'clamp(28px,4vw,40px)', fontWeight: 800, marginBottom: 10 }}>Historical Cutoff Checker</h1>
-          <p style={{ color: 'var(--text2)', maxWidth: 760, lineHeight: 1.7 }}>Compare an MHT-CET percentile with extracted Maharashtra engineering CAP Round IV cutoffs for 2025–26. This tool shows historical comparisons only—not admission chances or a guarantee.</p>
+          <p style={{ color: 'var(--text2)', maxWidth: 760, lineHeight: 1.7 }}>Compare an MHT-CET percentile with the extracted 2025–26 Maharashtra engineering CAP cutoff dataset. Filter by exact seat-category code, CAP stage, and college/course. Only engineering Maharashtra-state percentile records are compared here; pharmacy merit scores and All India records must not be compared to an MHT-CET percentile.</p>
         </div>
 
         <div className="card" style={{ padding: 24, marginBottom: 24 }}>
@@ -73,7 +74,20 @@ export default function HistoricalCutoffs() {
               </select>
             </div>
             <div className="form-group">
-              <label className="form-label" htmlFor="hc-search">College name (optional)</label>
+              <label className="form-label" htmlFor="hc-stage">CAP stage</label>
+              <select id="hc-stage" style={inputStyle} value={stage} onChange={e => setStage(e.target.value)}>
+                <option value="">All stages in dataset</option>
+                <option value="I">Stage I</option>
+                <option value="II">Stage II</option>
+                <option value="III">Stage III</option>
+                <option value="IV">Stage IV</option>
+                <option value="V">Stage V</option>
+                <option value="VI">Stage VI</option>
+                <option value="VII">Stage VII</option>
+              </select>
+            </div>
+            <div className="form-group">
+              <label className="form-label" htmlFor="hc-search">College or course (optional)</label>
               <input id="hc-search" style={inputStyle} value={search} onChange={e => setSearch(e.target.value)} placeholder="e.g. Amravati" />
             </div>
             <button className="btn btn-grad" type="submit" disabled={loading} style={{ minHeight: 46 }}>{loading ? 'Checking…' : 'Compare historical cutoffs →'}</button>
@@ -105,7 +119,7 @@ export default function HistoricalCutoffs() {
                 </table>
               </div>
             )}
-            <p style={{ color: 'var(--text3)', fontSize: 12, marginTop: 14, lineHeight: 1.7 }}>Historical reference only. This comparison does not determine eligibility or admission probability. Gender, home-university quota, seat eligibility, other rounds, and current-year rules are not inferred. The category codes refer to seat categories in the source data; verify your applicable category with the official CAP rules.</p>
+            <p style={{ color: 'var(--text3)', fontSize: 12, marginTop: 14, lineHeight: 1.7 }}>Historical reference only — not an admission prediction or guarantee. Results use the exact seat-category code selected and the available 2025–26 source records; they do not infer candidate eligibility, gender-specific seats, home-university quota, or current-year rules. This page currently compares Maharashtra engineering percentile records only. Check the official CAP rules and source documents before making choices.</p>
           </div>
         )}
       </div>
