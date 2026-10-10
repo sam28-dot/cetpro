@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import api from '../utils/api';
 
 const CATEGORIES = [
@@ -23,6 +23,47 @@ export default function HistoricalCutoffs() {
   const [meta, setMeta] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [institutes, setInstitutes] = useState([]);
+  const [instituteQuery, setInstituteQuery] = useState('');
+  const [instituteLoading, setInstituteLoading] = useState(true);
+  const [instituteError, setInstituteError] = useState('');
+
+  useEffect(() => {
+    let active = true;
+    api.get('/institutes')
+      .then(({ data }) => {
+        if (!active) return;
+        if (!data.success) throw new Error(data.message || 'Unable to load the official institute directory.');
+        setInstitutes(data.institutes || []);
+      })
+      .catch(err => {
+        if (active) setInstituteError(err.response?.data?.message || err.message || 'Unable to load the official institute directory.');
+      })
+      .finally(() => { if (active) setInstituteLoading(false); });
+    return () => { active = false; };
+  }, []);
+
+  const filteredInstitutes = useMemo(() => {
+    const query = instituteQuery.trim().toLowerCase().replace(/\s+/g, ' ');
+    if (!query) return institutes;
+    return institutes.filter(item => [item.instituteCode, item.name, item.status].some(value => String(value || '').toLowerCase().replace(/\s+/g, ' ').includes(query)));
+  }, [institutes, instituteQuery]);
+
+  const exportInstitutesCsv = () => {
+    const columns = ['Institute Code', 'Institute Name', 'Status', 'Total Intake', 'Historical Cutoff Data Available'];
+    const rows = filteredInstitutes.map(item => [item.instituteCode, item.name, item.status, item.totalIntake, item.hasHistoricalCutoff ? 'Yes' : 'No']);
+    const csvCell = value => '"' + String(value ?? '').replace(/"/g, '""') + '"';
+    const csv = [columns, ...rows].map(row => row.map(csvCell).join(',')).join('\r\n');
+    const url = URL.createObjectURL(new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8;' }));
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = 'maharashtra-engineering-institutes-2025-26.csv';
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+    URL.revokeObjectURL(url);
+  };
+
 
   const compare = async (event) => {
     event.preventDefault();
@@ -83,6 +124,37 @@ export default function HistoricalCutoffs() {
           <h1 style={{ fontSize: 'clamp(28px,4vw,40px)', fontWeight: 800, marginBottom: 10 }}>Historical Cutoff Checker</h1>
           <p style={{ color: 'var(--text2)', maxWidth: 760, lineHeight: 1.7 }}>Compare an MHT-CET percentile with the extracted 2025–26 Maharashtra engineering CAP cutoff dataset. Filter by exact seat-category code, CAP stage, and college/course. Only engineering Maharashtra-state percentile records are compared here; pharmacy merit scores and All India records must not be compared to an MHT-CET percentile.</p>
         </div>
+
+        <section className="card" style={{ padding: 24, marginBottom: 24 }} aria-labelledby="hc-directory-title">
+          <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', flexWrap: 'wrap', gap: 12, marginBottom: 16 }}>
+            <div>
+              <h2 id="hc-directory-title" style={{ fontSize: 22, fontWeight: 800, marginBottom: 6 }}>Maharashtra engineering college directory</h2>
+              <p style={{ color: 'var(--text2)', lineHeight: 1.6, margin: 0 }}>Search the official 2025–26 institute directory. Cutoff availability is shown separately; an institute listing does not mean every course/category/round has a published cutoff in our imported dataset.</p>
+            </div>
+            <button type="button" className="btn btn-grad" onClick={exportInstitutesCsv} disabled={!filteredInstitutes.length}>Export college directory (CSV)</button>
+          </div>
+          <div style={{ display: 'grid', gridTemplateColumns: 'minmax(220px, 1fr) auto', gap: 12, alignItems: 'end', marginBottom: 14 }}>
+            <div className="form-group" style={{ margin: 0 }}>
+              <label className="form-label" htmlFor="hc-institute-search">Search college name or institute code</label>
+              <input id="hc-institute-search" style={inputStyle} value={instituteQuery} onChange={e => setInstituteQuery(e.target.value)} placeholder="e.g. Kokan Gyanpeeth or 03198" />
+            </div>
+            <div style={{ color: 'var(--text2)', fontSize: 13, paddingBottom: 12 }}>{instituteLoading ? 'Loading official directory…' : `${filteredInstitutes.length} colleges`}</div>
+          </div>
+          {instituteError && <div role="alert" style={{ color: 'var(--orange)', marginBottom: 14 }}>{instituteError} <a href="https://fe2025.mahacet.org/StaticPages/frmInstituteList" target="_blank" rel="noreferrer">Open official institute list</a></div>}
+          {!instituteLoading && !instituteError && filteredInstitutes.length === 0 && <p style={{ color: 'var(--text2)' }}>No institutes match that search. Try a shorter name or the institute code.</p>}
+          {filteredInstitutes.length > 0 && <div style={{ overflowX: 'auto', maxHeight: 440, border: '1px solid var(--border)', borderRadius: 'var(--r3)' }}>
+            <table style={{ width: '100%', borderCollapse: 'collapse', minWidth: 620 }}>
+              <thead><tr>{['Institute code', 'College name', 'Status', 'Historical cutoff data'].map(label => <th key={label} style={{ ...th, position: 'sticky', top: 0, zIndex: 1 }}>{label}</th>)}</tr></thead>
+              <tbody>{filteredInstitutes.map(item => <tr key={item.instituteCode}>
+                <td style={td}>{item.instituteCode}</td>
+                <td style={td}><strong>{item.name}</strong></td>
+                <td style={td}>{item.status}</td>
+                <td style={td}><span style={{ color: item.hasHistoricalCutoff ? 'var(--green)' : 'var(--text2)', fontWeight: 700 }}>{item.hasHistoricalCutoff ? 'Records found' : 'Not in imported cutoff records'}</span></td>
+              </tr>)}</tbody>
+            </table>
+          </div>}
+          <p style={{ color: 'var(--text3)', fontSize: 12, lineHeight: 1.6, marginTop: 12 }}>Source: <a href="https://fe2025.mahacet.org/StaticPages/frmInstituteList" target="_blank" rel="noreferrer">Maharashtra CET Cell official institute list</a>. Directory data is loaded from the official source when the backend can reach it.</p>
+        </section>
 
         <div className="card" style={{ padding: 24, marginBottom: 24 }}>
           <form onSubmit={compare} style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(190px,1fr))', gap: 16, alignItems: 'end' }}>
