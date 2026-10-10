@@ -111,8 +111,10 @@ function hasVerifiedCutoffs() {
 }
 
 function normaliseText(value) {
+  const aliases = { govt: 'government', engg: 'engineering', kokan: 'konkan', gyanpeth: 'gyanpeeth' };
   return String(value ?? '').normalize('NFKD').toLowerCase()
-    .replace(/[^a-z0-9]+/g, ' ').trim().split(' ').filter(Boolean).join(' ');
+    .replace(/[^a-z0-9]+/g, ' ').trim().split(' ').filter(Boolean)
+    .map((word) => aliases[word] || word).join(' ');
 }
 
 function matchesPreferredBranch(course, preferred) {
