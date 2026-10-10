@@ -14,9 +14,9 @@ import { predictionAPI } from '../utils/api';
 import CollegeCard from '../components/predictor/CollegeCard';
 
 const SECTIONS = [
-  { key:'safe',     label:'✅ Safe Colleges',     badge:'badge-safe',     desc:'High probability of admission based on your percentile.' },
-  { key:'moderate', label:'🎯 Moderate Colleges', badge:'badge-moderate', desc:'Admission possible — applies to most students with your score.' },
-  { key:'dream',    label:'⭐ Dream Colleges',    badge:'badge-dream',    desc:'Stretch targets — apply if you love the college.' },
+  { key:'safe',     label:'✅ Safe Colleges',     badge:'badge-safe',     desc:'Your percentile is at least 3 points above the historical cutoff.' },
+  { key:'moderate', label:'🎯 Moderate Colleges', badge:'badge-moderate', desc:'Your percentile is within 4 points below to 3 points above the historical cutoff.' },
+  { key:'dream',    label:'⭐ Dream Colleges',    badge:'badge-dream',    desc:'Your percentile is more than 4 points below the historical cutoff.' },
 ];
 
 const LOC_OPTS = ['any','mumbai','pune','thane','nagpur','nashik','aurangabad','kolhapur'];
@@ -178,6 +178,12 @@ export default function Results() {
   return (
     <div className="page-wrapper">
       <div className="container" style={{ padding:'32px 24px 80px' }}>
+        <div className="card" style={{ padding:16, marginBottom:20, borderLeft:'4px solid var(--accent)' }}>
+          <strong>Historical cutoff comparison — not an admission prediction.</strong>
+          <div style={{ color:'var(--text2)', fontSize:13, lineHeight:1.6, marginTop:6 }}>
+            Results use imported official 2025–26 CAP Round IV engineering percentile records. Each result retains its official category code. Home-university eligibility, gender-specific seats, fees, placements and admission probability are not inferred where verified data is unavailable.
+          </div>
+        </div>
 
         {/* Header */}
         <div style={{ display:'flex', alignItems:'flex-start', justifyContent:'space-between', flexWrap:'wrap', gap:16, marginBottom:24 }}>
