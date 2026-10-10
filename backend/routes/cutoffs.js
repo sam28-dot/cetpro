@@ -7,6 +7,25 @@ const dataset = require('../data/official-cutoffs-2025-26.json');
 const records = Array.isArray(dataset.records) ? dataset.records : [];
 const normalise = (value) => String(value ?? '').trim().toLowerCase().replace(/\\s+/g, ' ').replace(/\\bkokan\\b/g, 'konkan');
 
+// GET /api/cutoffs/categories
+// Return only category codes that actually exist in the imported engineering MH percentile records.
+router.get('/categories', (req, res) => {
+  const categories = [...new Set(records
+    .filter((r) => r.domain === 'engineering' && r.route === 'MH' && r.bracketMetric === 'merit_percentile' && r.parsed === true)
+    .map((r) => String(r.categoryCode || '').trim().toUpperCase())
+    .filter(Boolean))]
+    .sort((a, b) => a.localeCompare(b));
+
+  res.json({
+    success: true,
+    academicYear: dataset.academicYear,
+    round: dataset.round,
+    categories,
+    count: categories.length,
+    note: 'Exact category codes present in the currently imported official historical records; codes are not inferred.',
+  });
+});
+
 // GET /api/cutoffs
 // Read-only access to imported official CAP Round IV records.
 // This endpoint is for browsing/validation only; it does not enable predictions.
