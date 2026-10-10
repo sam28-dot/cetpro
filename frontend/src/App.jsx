@@ -27,6 +27,7 @@ import Compare    from './pages/Compare';
 import About      from './pages/About';
 import SharedResult from './pages/SharedResult';
 import NotFound   from './pages/NotFound';
+import HistoricalCutoffs from './pages/HistoricalCutoffs';
 
 import './styles/globals.css';
 import './styles/components.css';
@@ -65,6 +66,7 @@ const AppShell = () => {
         {/* Public */}
         <Route path="/"          element={<Landing />} />
         <Route path="/about"     element={<About />} />
+        <Route path="/historical-cutoffs" element={<HistoricalCutoffs />} />
         <Route path="/share/:token" element={<SharedResult />} />
 
         {/* Auth (public only when logged out) */}
