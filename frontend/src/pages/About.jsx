@@ -50,7 +50,7 @@ const STREAMS = [
     textColor: 'var(--accent2)',
     accentBg: 'rgba(108,99,255,0.15)',
     branches: ['CSE', 'IT', 'AI / ML', 'Data Science', 'EXTC', 'Mechanical', 'Civil', 'Electronics', 'IoT'],
-    desc: '25+ engineering colleges across Maharashtra with 5-year branch-wise cutoff data for every category.',
+    desc: 'Explore engineering records available in the imported Maharashtra CAP dataset. Coverage varies by branch, category, and source record.',
     count: '25+ Colleges',
   },
   {
@@ -61,17 +61,17 @@ const STREAMS = [
     textColor: 'var(--green)',
     accentBg: 'rgba(34,211,160,0.15)',
     branches: ['B.Pharm', 'Pharm.D', 'D.Pharm', 'M.Pharm (Pharmaceutics)', 'M.Pharm (Clinical Pharmacy)', 'Pharmacognosy'],
-    desc: '15+ pharmacy colleges across Maharashtra with MHT-CET PCB/PCM group cutoffs for all categories.',
+    desc: 'Pharmacy options are shown only where matching Maharashtra records and a compatible merit metric are available.',
     count: '15+ Colleges',
   },
 ];
 
 const DATA_SOURCES = [
-  { source: 'DTE Maharashtra CAP Data — Engineering', years: '2019–2024', coverage: '25+ colleges, all categories & branches' },
-  { source: 'DTE Maharashtra CAP Data — Pharmacy',   years: '2019–2024', coverage: '15+ colleges, B.Pharm / Pharm.D / D.Pharm' },
-  { source: 'NIRF Rankings',                         years: '2022–2024', coverage: 'Top 200 institutes' },
-  { source: 'College Placement Reports',             years: '2023–2024', coverage: '150+ colleges' },
-  { source: 'Autonomous Status (UGC / AICTE / PCI)', years: '2024',      coverage: 'All listed colleges' },
+  { source: 'Maharashtra State CET Cell — Engineering CAP', years: '2025–26 · Round IV import', coverage: 'Imported records; coverage varies by college, course and category' },
+  { source: 'Maharashtra State CET Cell — Pharmacy CAP', years: '2025–26 · source records', coverage: 'Only compatible Maharashtra merit records should be compared' },
+  { source: 'College metadata', years: 'Varies by record', coverage: 'Fees, placements and rankings may be unavailable or unverified' },
+  { source: 'Official college sources', years: 'Check each institution', coverage: 'Use college/NIRF disclosures to verify fees and placement claims' },
+  { source: 'Official admission portal', years: 'Current cycle', coverage: 'Always confirm eligibility, seat type and CAP rules before applying' },
 ];
 
 const ALGO = [
@@ -107,7 +107,7 @@ export default function About() {
               <span className="grad-text">for students.</span>
             </h1>
             <p style={{ fontSize: 17, color: 'var(--text2)', lineHeight: 1.8, maxWidth: 600 }}>
-              We are <strong style={{ color: 'var(--text)' }}>three Engineering students</strong> from Maharashtra
+              We are <strong style={{ color: 'var(--text)' }}>four student founders</strong> from Maharashtra
               who experienced the cost of missing the right information — and decided
               to fix it for everyone who comes after us.
             </p>
@@ -159,8 +159,8 @@ export default function About() {
               Streams We Predict
             </h2>
             <p style={{ color: 'var(--text2)', fontSize: 15, maxWidth: 520, lineHeight: 1.65 }}>
-              Our database covers both streams that MHT-CET qualifies you for.
-              Select your stream in the predictor to get accurate results.
+              The app supports both stream interfaces, but actual result coverage depends on the imported records and compatible metric.
+              Always check the source and category code shown with each result.
             </p>
           </div>
 
