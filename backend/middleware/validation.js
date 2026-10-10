@@ -62,13 +62,13 @@ const resetPasswordValidator = [
   body('password')
     .notEmpty().withMessage('Password is required')
     .isLength({ min: 8 }).withMessage('Password must be at least 8 characters')
-    .matches(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)/)
+    .matches(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/)
     .withMessage('Password must contain uppercase, lowercase, and a number'),
   body().custom((value) => {
     const hasLegacyToken = typeof value.token === 'string' && value.token.length > 0;
-    const hasOtp = typeof value.email === 'string' && typeof value.otp === 'string' && /^\\d{6}$/.test(value.otp);
+    const hasOtp = typeof value.email === 'string' && typeof value.otp === 'string' && /^\d{6}$/.test(value.otp);
     if (!hasLegacyToken && !hasOtp) throw new Error('Provide the email and 6-digit verification code.');
-    if (hasOtp && !/^\\S+@\\S+\\.\\S+$/.test(value.email.trim())) throw new Error('Please provide a valid email.');
+    if (hasOtp && !/^\S+@\S+\\.\S+$/.test(value.email.trim())) throw new Error('Please provide a valid email.');
     return true;
   }),
   validate,
