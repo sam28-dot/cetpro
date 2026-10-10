@@ -84,9 +84,39 @@ router.get('/', async (req, res) => {
     return res.json({ success: true, source: SOURCE_URL, academicYear: '2025-26', cached: false, total: institutes.length, institutes });
   } catch (error) {
     console.error('[Institutes] Official directory fetch failed:', error.message);
+    const fallbackMap = new Map();
+    (cutoffDataset.records || []).forEach((record) => {
+      const instituteCode = String(record.collegeCode || '').trim();
+      const name = String(record.college || '').trim();
+      if (!instituteCode || !name) return;
+      if (!fallbackMap.has(instituteCode)) {
+        fallbackMap.set(instituteCode, {
+          instituteCode,
+          name,
+          status: 'Status unavailable — fallback from imported cutoff records',
+          totalIntake: null,
+          hasHistoricalCutoff: true,
+          source: SOURCE_URL,
+        });
+      }
+    });
+    const fallbackInstitutes = [...fallbackMap.values()].sort((a, b) => a.name.localeCompare(b.name));
+    if (fallbackInstitutes.length) {
+      cache = { at: Date.now(), institutes: fallbackInstitutes };
+      return res.json({
+        success: true,
+        source: SOURCE_URL,
+        sourceMode: 'cutoff-record-fallback',
+        warning: 'The official institute list could not be reached. This fallback includes only institutes found in imported cutoff records, not every Maharashtra institute.',
+        academicYear: '2025-26',
+        cached: false,
+        total: fallbackInstitutes.length,
+        institutes: fallbackInstitutes,
+      });
+    }
     return res.status(502).json({
       success: false,
-      message: 'The official Maharashtra CET Cell institute directory could not be loaded right now. Please retry shortly or open the official source.',
+      message: 'The official Maharashtra CET Cell institute directory could not be loaded and no fallback records are available. Please retry or open the official source.',
       source: SOURCE_URL,
     });
   }
