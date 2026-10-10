@@ -5,7 +5,35 @@ const router = express.Router();
 const dataset = require('../data/official-cutoffs-2025-26.json');
 
 const records = Array.isArray(dataset.records) ? dataset.records : [];
-const normalise = (value) => String(value ?? '').normalize('NFKD').trim().toLowerCase().split(' ').filter(Boolean).join(' ').replace('kokan', 'konkan');
+const normalise = (value) => String(value ?? '')
+  .normalize('NFKD')
+  .toLowerCase()
+  .replace(/\\bgovt\\b/g, 'government')
+  .replace(/\\bengg\\b/g, 'engineering')
+  .replace(/\\bkokan\\b/g, 'konkan')
+  .replace(/\\bgyanpeth\\b/g, 'gyanpeeth')
+  .replace(/[^a-z0-9]+/g, ' ')
+  .trim()
+  .replace(/\\s+/g, ' ');
+
+const CATEGORY_FAMILIES = {
+  GOPENS: ['GOPENS', 'GOPENH', 'GOPENO'],
+  GSCS: ['GSCS', 'GSCH', 'GSCO'],
+  GSTS: ['GSTS', 'GSTH', 'GSTO'],
+  GOBCS: ['GOBCS', 'GOBCH', 'GOBCO'],
+  GNT1S: ['GNT1S', 'GNT1H', 'GNT1O'],
+  GNT2S: ['GNT2S', 'GNT2H', 'GNT2O'],
+  GNT3S: ['GNT3S', 'GNT3H', 'GNT3O'],
+  GVJS: ['GVJS', 'GVJH', 'GVJO'],
+  GEWS: ['GEWS', 'EWS'],
+};
+
+const matchesSearch = (record, query) => {
+  const q = normalise(query);
+  if (!q) return true;
+  const haystack = normalise([record.college, record.course, record.choiceCode, record.collegeCode].join(' '));
+  return haystack.includes(q) || q.split(' ').filter(Boolean).every((token) => haystack.includes(token));
+};
 const normaliseStage = (value) => {
   const stage = String(value ?? '').trim().toUpperCase().replace('STAGE ', '').replaceAll(' ', '').replaceAll('-', '');
   return stage;
@@ -88,20 +116,24 @@ router.get('/compare', (req, res) => {
     return res.status(400).json({ success: false, message: 'Provide the exact official categoryCode, e.g. GOPENS. No automatic category mapping is applied.' });
   }
 
-  let filtered = records.filter((r) =>
-    r.domain === 'engineering' &&
-    r.route === 'MH' &&
-    r.bracketMetric === 'merit_percentile' &&
-    r.parsed === true &&
-    normalise(r.categoryCode) === normalise(categoryCode)
+  const baseRecords = records.filter((r) =>
+    r.domain === 'engineering' && r.route === 'MH' &&
+    r.bracketMetric === 'merit_percentile' && r.parsed === true
   );
+  let filtered = baseRecords.filter((r) => normalise(r.categoryCode) === normalise(categoryCode));
 
   if (stage) filtered = filtered.filter((r) => normaliseStage(r.stage) === normaliseStage(stage));
   if (search) {
-    filtered = filtered.filter((r) =>
-      [r.college, r.course, r.choiceCode, r.collegeCode]
-        .some((value) => normalise(value).includes(search))
-    );
+    const exactSearchResults = filtered.filter((r) => matchesSearch(r, search));
+    if (exactSearchResults.length) {
+      filtered = exactSearchResults;
+    } else {
+      const family = CATEGORY_FAMILIES[normalise(categoryCode)] || [normalise(categoryCode)];
+      filtered = baseRecords.filter((r) =>
+        family.includes(normalise(r.categoryCode)) && matchesSearch(r, search) &&
+        (!stage || normaliseStage(r.stage) === normaliseStage(stage))
+      );
+    }
   }
 
   const comparisons = filtered.map((r) => ({
@@ -129,7 +161,9 @@ router.get('/compare', (req, res) => {
     input: { percentile, categoryCode, search: search || null, stage: stage || null },
     total: comparisons.length,
     records: comparisons.slice(0, 100),
-    note: 'This compares a percentile against extracted historical cutoffs only. It is not an admission prediction or guarantee. Category/seat eligibility, gender, home-university status, and current-year rules are not inferred.',
+    note: search && comparisons.some((r) => normalise(r.categoryCode) !== normalise(categoryCode))
+      ? 'No exact-category rows matched this search. Matching official home-university/other-university variants in the same category family are shown; check each returned categoryCode and eligibility. Historical comparison only, not an admission guarantee.'
+      : 'This compares a percentile against extracted historical cutoffs only. It is not an admission prediction or guarantee. Category/seat eligibility, gender, home-university status, and current-year rules are not inferred.',
   });
 });
 
