@@ -16,7 +16,7 @@ const BRANCH_LABELS = {
 const LOC_LABELS = { mumbai: 'Mumbai', pune: 'Pune', thane: 'Thane / Navi Mumbai', nagpur: 'Nagpur', nashik: 'Nashik', aurangabad: 'Aurangabad', kolhapur: 'Kolhapur', solapur: 'Solapur' };
 
 export default function CollegeCard({ result, index, onCompare, isCompared, onSave, isSaved, delay = 0 }) {
-  const { collegeName, branch, location, tier, fees, cutoffPercentile,
+  const { collegeName, branch, stream, location, tier, fees, cutoffPercentile,
     placementRate, avgPackage, maxPackage, autonomous, type, nirf, gap, score, category,
     officialCategoryCode, academicYear, cutoffRound, cutoffSourceUrl } = result;
 
