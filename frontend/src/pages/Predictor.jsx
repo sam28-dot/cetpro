@@ -32,13 +32,6 @@ const UNIVERSITIES = [
   { value:'other',      label:'Other' },
 ];
 
-const marksToPercentile = (phy, chem, math) => {
-  const total = (parseFloat(phy)||0) + (parseFloat(chem)||0) + (parseFloat(math)||0);
-  if (!total) return 0;
-  const norm = total / 200;
-  return Math.round(Math.min(99.99, Math.max(0, Math.pow(norm, 0.65) * 100 - 1.5)) * 100) / 100;
-};
-
 const STEPS = [
   { id:'score',   label:'Your Score',   icon:'🎓' },
   { id:'profile', label:'Your Profile', icon:'👤' },
@@ -51,10 +44,7 @@ export default function Predictor() {
   const [step, setStep]     = useState(0);
   const [loading, setLoading] = useState(false);
 
-  const [scoreMode, setScoreMode] = useState('percentile');
   const [percentile, setPercentile] = useState('');
-  const [marks, setMarks] = useState({ phy:'', chem:'', math:'' });
-  const [estPct, setEstPct] = useState(null);
 
   const [stream, setStream] = useState('engineering');
 
@@ -70,13 +60,6 @@ export default function Predictor() {
 
   const [errors, setErrors] = useState({});
 
-  const handleMarksChange = (field, val) => {
-    const updated = { ...marks, [field]: val };
-    setMarks(updated);
-    const pct = marksToPercentile(updated.phy, updated.chem, updated.math);
-    setEstPct(pct || null);
-  };
-
   const toggleBranch = (b) => {
     if (b === 'any') { setBranches(['any']); return; }
     setBranches(prev => {
@@ -90,7 +73,7 @@ export default function Predictor() {
   const validateStep = () => {
     const e = {};
     if (step === 0) {
-      const p = scoreMode === 'percentile' ? parseFloat(percentile) : estPct;
+      const p = parseFloat(percentile);
       if (!p || isNaN(p) || p < 0 || p > 100) e.percentile = 'Enter a valid percentile between 0 and 100';
     }
     setErrors(e);
@@ -103,7 +86,7 @@ export default function Predictor() {
   const handleSubmit = async () => {
     setLoading(true);
     try {
-      const finalPercentile = scoreMode === 'percentile' ? parseFloat(percentile) : estPct;
+      const finalPercentile = parseFloat(percentile)
       const { data } = await predictionAPI.create({
         percentile: finalPercentile,
         category,
@@ -127,9 +110,6 @@ export default function Predictor() {
       setLoading(false);
     }
   };
-
-  const getEffectivePercentile = () =>
-    scoreMode === 'percentile' ? parseFloat(percentile) || null : estPct;
 
   return (
     <div className="page-wrapper">
@@ -195,55 +175,19 @@ export default function Predictor() {
                   </div>
                 </div>
 
-                <div style={s.toggle}>
-                  {['percentile','marks'].map(m => (
-                    <button key={m} style={{ ...s.toggleBtn, ...(scoreMode===m ? s.toggleActive : {}) }}
-                      onClick={() => setScoreMode(m)}>
-                      {m === 'percentile' ? 'Percentile' : 'PCM Marks'}
-                    </button>
-                  ))}
+                <div className="form-group">
+                  <label className="form-label">Official MHT-CET Percentile (0–100)</label>
+                  <input type="number" className={`form-input ${errors.percentile?'error':''}`}
+                    placeholder="e.g. 94.50" value={percentile} min="0" max="100" step="0.01"
+                    onChange={e => { setPercentile(e.target.value); setErrors({}); }}
+                    style={{ fontSize:22, fontWeight:700, letterSpacing:'-0.5px' }}
+                    inputMode="decimal" required
+                  />
+                  {errors.percentile && <span className="form-error">{errors.percentile}</span>}
+                  <p style={{ color:'var(--text2)', fontSize:13, lineHeight:1.6, marginTop:10 }}>
+                    Use the percentile printed on your official scorecard. Raw marks cannot be converted reliably without the exam session’s normalization data.
+                  </p>
                 </div>
-
-                {scoreMode === 'percentile' && (
-                  <div className="form-group">
-                    <label className="form-label">MHT-CET Percentile (0 – 100)</label>
-                    <input type="number" className={`form-input ${errors.percentile?'error':''}`}
-                      placeholder="e.g. 94.50" value={percentile} min="0" max="100" step="0.01"
-                      onChange={e => { setPercentile(e.target.value); setErrors({}); }}
-                      style={{ fontSize:22, fontWeight:700, letterSpacing:'-0.5px' }}
-                    />
-                    {errors.percentile && <span className="form-error">{errors.percentile}</span>}
-                  </div>
-                )}
-
-                {scoreMode === 'marks' && (
-                  <div>
-                    <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:12, marginBottom:12 }}>
-                      <div className="form-group">
-                        <label className="form-label">Physics (out of 50)</label>
-                        <input type="number" className="form-input" placeholder="e.g. 42" value={marks.phy} min="0" max="50"
-                          onChange={e => handleMarksChange('phy', e.target.value)} />
-                      </div>
-                      <div className="form-group">
-                        <label className="form-label">Chemistry (out of 50)</label>
-                        <input type="number" className="form-input" placeholder="e.g. 38" value={marks.chem} min="0" max="50"
-                          onChange={e => handleMarksChange('chem', e.target.value)} />
-                      </div>
-                    </div>
-                    <div className="form-group">
-                      <label className="form-label">Mathematics (out of 100)</label>
-                      <input type="number" className="form-input" placeholder="e.g. 78" value={marks.math} min="0" max="100"
-                        onChange={e => handleMarksChange('math', e.target.value)} />
-                    </div>
-                    {estPct && (
-                      <div style={s.estBadge}>
-                        ✨ Estimated Percentile: <strong>~{estPct}</strong>
-                        <span style={{ color:'var(--text3)', marginLeft:6, fontSize:12 }}>(rough estimate only — not an official CET percentile)</span>
-                      </div>
-                    )}
-                    {errors.percentile && <span className="form-error">{errors.percentile}</span>}
-                  </div>
-                )}
               </div>
             )}
 
@@ -274,7 +218,7 @@ export default function Predictor() {
                     </select>
                   </div>
                   <div style={s.infoBox}>
-                    <span style={{ fontWeight:700 }}>Category:</span> Reserved category students receive a percentile adjustment. SC +18, ST +25, OBC +8, and so on.
+                    <span style={{ fontWeight:700 }}>Category:</span> Category selection helps organise your search. No artificial percentile bonus is applied; verify official category and seat-type eligibility in the CAP brochure.
                   </div>
                 </div>
               </div>
