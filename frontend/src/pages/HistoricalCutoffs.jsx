@@ -143,6 +143,7 @@ export default function HistoricalCutoffs() {
 
         {meta && (
           <div>
+            {meta.note && <p style={{ color: 'var(--text2)', fontSize: 13, lineHeight: 1.6, marginBottom: 14 }}>{meta.note}</p>}
             <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap', marginBottom: 16 }}>
               <div className="card" style={{ padding: '14px 18px', flex: '1 1 160px' }}><div style={{ color: 'var(--text2)', fontSize: 12 }}>Matching records</div><div style={{ fontSize: 25, fontWeight: 800 }}>{meta.total}</div></div>
               <div className="card" style={{ padding: '14px 18px', flex: '1 1 160px' }}><div style={{ color: 'var(--text2)', fontSize: 12 }}>Dataset</div><div style={{ fontSize: 16, fontWeight: 700 }}>{meta.academicYear} · {meta.round}</div></div>
