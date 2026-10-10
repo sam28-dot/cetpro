@@ -1,60 +1,96 @@
+
 'use strict';
 
+const crypto = require('crypto');
+const mongoose = require('mongoose');
+const Prediction = require('../models/Prediction');
 const { COLLEGE_DB, CUTOFF_DATASET } = require('../data/colleges');
 
 const VALID_CATEGORIES = new Set([
-  'OPEN', 'EWS', 'OBC', 'SC', 'ST', 'NT-B', 'NT-C', 'NT-D', 'VJ-DT', 'SBC',
+  'OPEN', 'EWS', 'OBC', 'SC', 'ST',
+  'NT-B', 'NT-C', 'NT-D', 'VJ-DT', 'SBC',
 ]);
+
 const VALID_STREAMS = new Set(['engineering', 'pharmacy', 'any']);
-const EMPTY_RESULTS = () => ({ safe: [], moderate: [], dream: [] });
+
+const EMPTY_RESULTS = () => ({
+  safe: [],
+  moderate: [],
+  dream: [],
+});
 
 function normaliseCategory(value) {
-  return String(value ?? '').trim().toUpperCase().replace(/_/g, '-');
+  return String(value ?? '')
+    .trim()
+    .toUpperCase()
+    .replace(/_/g, '-');
 }
 
 function parsePercentile(value) {
-  if (value === '' || value === null || value === undefined) return null;
-  const n = Number(value);
-  return Number.isFinite(n) && n >= 0 && n <= 100 ? n : null;
+  if (value === '' || value === null || value === undefined) {
+    return null;
+  }
+
+  const number = Number(value);
+
+  return Number.isFinite(number) && number >= 0 && number <= 100
+    ? number
+    : null;
 }
 
 function median(values) {
   if (!Array.isArray(values) || values.length === 0) return null;
+
   const numbers = values.map(Number);
   if (!numbers.every(Number.isFinite)) return null;
+
   numbers.sort((a, b) => a - b);
+
   const mid = Math.floor(numbers.length / 2);
-  return numbers.length % 2 ? numbers[mid] : (numbers[mid - 1] + numbers[mid]) / 2;
+
+  return numbers.length % 2
+    ? numbers[mid]
+    : (numbers[mid - 1] + numbers[mid]) / 2;
 }
 
 /**
- * Returns a cutoff only when it is explicitly marked verified and identifies
- * the target year/round plus an official Maharashtra CET Cell source URL.
- * Expected branch schema:
- * verifiedCutoffs: {
- *   SC: { percentile: 92.31, verified: true, academicYear: '2025-26',
- *         round: 'CAP Round IV', sourceUrl: 'https://fe2025.mahacet.org/...' }
- * }
- * A real importer must also match the correct institute/course/category/seat
- * type/gender/home-university/quota row before creating this record.
+ * Accept only explicitly verified records matching the configured
+ * academic year and CAP round, with an official Maharashtra CET Cell URL.
  */
 function getVerifiedCutoff(branch, category) {
-  const record = branch && branch.verifiedCutoffs && branch.verifiedCutoffs[category];
+  const record =
+    branch &&
+    branch.verifiedCutoffs &&
+    branch.verifiedCutoffs[category];
+
   if (!record || record.verified !== true) return null;
   if (record.academicYear !== CUTOFF_DATASET.academicYear) return null;
   if (record.round !== CUTOFF_DATASET.targetRound) return null;
   if (typeof record.sourceUrl !== 'string') return null;
+
   let source;
-  try { source = new URL(record.sourceUrl); } catch { return null; }
-  if (source.protocol !== 'https:' || !/(^|\.)mahacet\.org$/i.test(source.hostname)) return null;
+
+  try {
+    source = new URL(record.sourceUrl);
+  } catch {
+    return null;
+  }
+
+  if (
+    source.protocol !== 'https:' ||
+    !/(^|\.)mahacet\.org$/i.test(source.hostname)
+  ) {
+    return null;
+  }
+
   return parsePercentile(record.percentile);
 }
 
 function hasVerifiedCutoffs() {
-  return COLLEGE_DB.some(college =>
-    Object.values(college.branches || {}).some(branch =>
-      Object.keys(branch.verifiedCutoffs || {}).some(category =>
-        getVerifiedCutoff(branch, category) !== null
+  return COLLEGE_DB.some((college) =>
+    Object.values(college.branches || {}).some((branch) =>
+      Object.keys(branch.verifiedCutoffs || {}).some(
+        (category) => getVerifiedCutoff(branch, category) !== null
       )
     )
   );
@@ -66,10 +102,18 @@ function calcScore(college, branch) {
   const nirf = Number(college.nirf) || 0;
   const fees = Number(college.fees) || 0;
   const tier = Number(college.tier) || 3;
+
   const nirfScore = nirf > 0 ? Math.max(0, 100 - nirf) : 0;
   const feeScore = Math.max(0, 1 - fees / 250000) * 100;
-  const tierScore = Math.max(0, 4 - tier) / 3 * 100;
-  return Math.round(placement * 0.4 + Math.min(averagePackage * 2, 100) * 0.25 + nirfScore * 0.15 + feeScore * 0.1 + tierScore * 0.1);
+  const tierScore = (Math.max(0, 4 - tier) / 3) * 100;
+
+  return Math.round(
+    placement * 0.4 +
+    Math.min(averagePackage * 2, 100) * 0.25 +
+    nirfScore * 0.15 +
+    feeScore * 0.1 +
+    tierScore * 0.1
+  );
 }
 
 function predictColleges(input = {}) {
@@ -79,38 +123,96 @@ function predictColleges(input = {}) {
   const results = EMPTY_RESULTS();
 
   if (percentile === null) {
-    return { success: false, message: 'Enter a valid MHT-CET percentile from 0 to 100.', results };
+    return {
+      success: false,
+      message: 'Enter a valid MHT-CET percentile from 0 to 100.',
+      results,
+    };
   }
+
   if (!VALID_CATEGORIES.has(category)) {
-    return { success: false, message: 'Select a supported admission category.', results };
+    return {
+      success: false,
+      message: 'Select a supported admission category.',
+      results,
+    };
   }
+
   if (!VALID_STREAMS.has(stream)) {
-    return { success: false, message: 'Select engineering, pharmacy, or any stream.', results };
+    return {
+      success: false,
+      message: 'Select engineering, pharmacy, or any stream.',
+      results,
+    };
   }
 
   let preferred = input.preferredBranches ?? ['any'];
-  if (typeof preferred === 'string') preferred = preferred.split(',').map(x => x.trim()).filter(Boolean);
+
+  if (typeof preferred === 'string') {
+    preferred = preferred
+      .split(',')
+      .map((value) => value.trim())
+      .filter(Boolean);
+  }
+
   if (!Array.isArray(preferred)) preferred = ['any'];
-  preferred = preferred.map(x => String(x).trim().toUpperCase());
+
+  preferred = preferred.map((value) =>
+    String(value).trim().toUpperCase()
+  );
 
   for (const college of COLLEGE_DB) {
-    const collegeStream = String(college.stream || 'engineering').toLowerCase();
+    const collegeStream = String(
+      college.stream || 'engineering'
+    ).toLowerCase();
+
     if (stream !== 'any' && collegeStream !== stream) continue;
 
-    if (input.location && String(input.location).toLowerCase() !== 'any' &&
-        String(college.location || '').toLowerCase() !== String(input.location).trim().toLowerCase()) continue;
-    if (input.collegeType && String(input.collegeType).toLowerCase() !== 'any' &&
-        String(college.type || '').toLowerCase() !== String(input.collegeType).trim().toLowerCase()) continue;
-    if (input.maxFees !== undefined && input.maxFees !== null && input.maxFees !== '' &&
-        Number.isFinite(Number(input.maxFees)) && Number(college.fees) > Number(input.maxFees)) continue;
+    if (
+      input.location &&
+      String(input.location).toLowerCase() !== 'any' &&
+      String(college.location || '').toLowerCase() !==
+      String(input.location).trim().toLowerCase()
+    ) {
+      continue;
+    }
 
-    for (const [branchName, branch] of Object.entries(college.branches || {})) {
-      if (!preferred.includes('ANY') && !preferred.includes(branchName.toUpperCase())) continue;
+    if (
+      input.collegeType &&
+      String(input.collegeType).toLowerCase() !== 'any' &&
+      String(college.type || '').toLowerCase() !==
+      String(input.collegeType).trim().toLowerCase()
+    ) {
+      continue;
+    }
+
+    if (
+      input.maxFees !== undefined &&
+      input.maxFees !== null &&
+      input.maxFees !== '' &&
+      Number.isFinite(Number(input.maxFees)) &&
+      Number(college.fees) > Number(input.maxFees)
+    ) {
+      continue;
+    }
+
+    for (const [branchName, branch] of Object.entries(
+      college.branches || {}
+    )) {
+      if (
+        !preferred.includes('ANY') &&
+        !preferred.includes(branchName.toUpperCase())
+      ) {
+        continue;
+      }
+
       const cutoff = getVerifiedCutoff(branch, category);
-      // Never fall back to the old illustrative `cutoffs` arrays.
+
+      // Never use legacy illustrative cutoff estimates.
       if (cutoff === null) continue;
 
       const gap = Number((percentile - cutoff).toFixed(2));
+
       const entry = {
         collegeId: college.id,
         collegeName: college.name,
@@ -132,40 +234,338 @@ function predictColleges(input = {}) {
         avgPkg: branch.avgPkg,
         maxPkg: branch.maxPkg,
       };
+
       if (gap >= 3) results.safe.push(entry);
       else if (gap >= -4) results.moderate.push(entry);
       else if (gap >= -10) results.dream.push(entry);
     }
   }
 
-  for (const group of Object.values(results)) group.sort((a, b) => b.score - a.score);
+  for (const group of Object.values(results)) {
+    group.sort((a, b) => b.score - a.score);
+  }
+
   const loaded = hasVerifiedCutoffs();
+
   return {
     success: true,
-    dataStatus: loaded ? 'verified_records_available' : 'official_records_not_loaded',
+    dataStatus: loaded
+      ? 'verified_records_available'
+      : 'official_records_not_loaded',
     academicYear: CUTOFF_DATASET.academicYear,
     cutoffRound: CUTOFF_DATASET.targetRound,
     message: loaded
       ? 'Results use matching records marked verified from the official Maharashtra CET Cell source.'
-      : 'Prediction is temporarily unavailable: verified 2025–26 CAP cutoff records have not been imported. Legacy estimates are intentionally not used.',
+      : 'Prediction is temporarily unavailable: verified 2025-26 CAP cutoff records have not been imported. Legacy estimates are intentionally not used.',
     results,
   };
 }
 
-function getPredictions(req, res) {
+// Convert prediction results into the schema used by Prediction.js.
+function toStoredResults(results) {
+  const stored = EMPTY_RESULTS();
+
+  for (const groupName of Object.keys(stored)) {
+    stored[groupName] = (results[groupName] || []).map((item) => ({
+      collegeId: item.collegeId,
+      collegeName: item.collegeName,
+      shortName: item.shortName,
+      branch: item.branch,
+      location: item.location,
+      tier: item.tier,
+      fees: item.fees,
+      cutoffPercentile: item.cutoffPercentile,
+      placementRate: item.placement,
+      avgPackage: item.avgPkg,
+      maxPackage: item.maxPkg,
+      autonomous: item.autonomous,
+      type: item.type,
+      nirf: item.nirf,
+      category: groupName,
+      score: item.score,
+      gap: item.percentileGap,
+    }));
+  }
+
+  return stored;
+}
+
+function getInput(req) {
+  const body = req.body || {};
+  const input =
+    body.input && typeof body.input === 'object'
+      ? body.input
+      : body;
+
+  const preferredBranches = input.preferredBranches ?? ['any'];
+
+  return {
+    percentile: input.percentile,
+    category: normaliseCategory(input.category),
+    gender: input.gender || 'any',
+    homeUniversity: input.homeUniversity || '',
+    preferredBranches: Array.isArray(preferredBranches)
+      ? preferredBranches.map(String)
+      : String(preferredBranches)
+        .split(',')
+        .map((value) => value.trim())
+        .filter(Boolean),
+    location: input.location || 'any',
+    collegeType: input.collegeType || 'any',
+    maxFees:
+      input.maxFees === '' ||
+        input.maxFees === undefined ||
+        input.maxFees === null
+        ? 300000
+        : Number(input.maxFees),
+    stream: String(input.stream || 'engineering').toLowerCase(),
+  };
+}
+
+// POST /api/predictions
+// Generate and save a prediction for the authenticated user.
+async function createPrediction(req, res, next) {
   try {
-    // Merge query first and body second, so submitted body fields take precedence.
-    const input = { ...(req.query || {}), ...(req.body || {}) };
-    const result = predictColleges(input);
-    return res.status(result.success ? 200 : 400).json(result);
-  } catch (error) {
-    console.error('Prediction error:', error);
-    return res.status(500).json({
-      success: false,
-      message: 'Unable to generate predictions.',
-      results: EMPTY_RESULTS(),
+    const input = getInput(req);
+    const calculated = predictColleges(input);
+
+    if (!calculated.success) {
+      return res.status(400).json(calculated);
+    }
+
+    // Do not save a misleading empty prediction when official records
+    // have not been imported.
+    if (calculated.dataStatus !== 'verified_records_available') {
+      return res.status(503).json({
+        ...calculated,
+        message:
+          'Verified official cutoff records are not loaded yet. No prediction was saved.',
+      });
+    }
+
+    const results = toStoredResults(calculated.results);
+
+    const totalMatches =
+      results.safe.length +
+      results.moderate.length +
+      results.dream.length;
+
+    const prediction = await Prediction.create({
+      user: req.user._id,
+      input,
+      results,
+      totalMatches,
+      label: String(req.body?.label || '').trim().slice(0, 100),
     });
+
+    return res.status(201).json({
+      success: true,
+      message: 'Prediction generated and saved successfully.',
+      prediction,
+      dataStatus: calculated.dataStatus,
+      academicYear: calculated.academicYear,
+      cutoffRound: calculated.cutoffRound,
+    });
+  } catch (error) {
+    return next(error);
   }
 }
 
-module.exports = { getPredictions, predictColleges, median, calcScore, getVerifiedCutoff };
+// GET /api/predictions
+// List only the authenticated user's saved predictions.
+async function getPredictions(req, res, next) {
+  try {
+    const predictions = await Prediction.find({
+      user: req.user._id,
+    })
+      .sort({ createdAt: -1 })
+      .limit(100)
+      .select('-results');
+
+    return res.status(200).json({
+      success: true,
+      count: predictions.length,
+      predictions,
+    });
+  } catch (error) {
+    return next(error);
+  }
+}
+
+// GET /api/predictions/:id
+// Retrieve one of the authenticated user's saved predictions.
+async function getPrediction(req, res, next) {
+  try {
+    if (!mongoose.isValidObjectId(req.params.id)) {
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid prediction ID.',
+      });
+    }
+
+    const prediction = await Prediction.findOne({
+      _id: req.params.id,
+      user: req.user._id,
+    });
+
+    if (!prediction) {
+      return res.status(404).json({
+        success: false,
+        message: 'Prediction not found.',
+      });
+    }
+
+    return res.status(200).json({
+      success: true,
+      prediction,
+    });
+  } catch (error) {
+    return next(error);
+  }
+}
+
+// PATCH /api/predictions/:id/share
+// Toggle public sharing for a prediction owned by the user.
+async function toggleShare(req, res, next) {
+  try {
+    if (!mongoose.isValidObjectId(req.params.id)) {
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid prediction ID.',
+      });
+    }
+
+    const prediction = await Prediction.findOne({
+      _id: req.params.id,
+      user: req.user._id,
+    });
+
+    if (!prediction) {
+      return res.status(404).json({
+        success: false,
+        message: 'Prediction not found.',
+      });
+    }
+
+    if (prediction.isPublic) {
+      prediction.isPublic = false;
+      prediction.shareToken = undefined;
+    } else {
+      prediction.isPublic = true;
+
+      // A cryptographically random token makes the share URL difficult
+      // to guess. Retry in the extremely unlikely event of a collision.
+      let token;
+      let attempts = 0;
+
+      do {
+        token = crypto.randomBytes(24).toString('hex');
+        attempts += 1;
+
+        if (attempts > 3) {
+          throw new Error('Unable to generate a unique share token.');
+        }
+      } while (
+        await Prediction.exists({ shareToken: token })
+      );
+
+      prediction.shareToken = token;
+    }
+
+    await prediction.save();
+
+    return res.status(200).json({
+      success: true,
+      isPublic: prediction.isPublic,
+      shareToken: prediction.isPublic
+        ? prediction.shareToken
+        : null,
+      message: prediction.isPublic
+        ? 'Prediction sharing enabled.'
+        : 'Prediction sharing disabled.',
+    });
+  } catch (error) {
+    return next(error);
+  }
+}
+
+// DELETE /api/predictions/:id
+// Delete only a prediction owned by the authenticated user.
+async function deletePrediction(req, res, next) {
+  try {
+    if (!mongoose.isValidObjectId(req.params.id)) {
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid prediction ID.',
+      });
+    }
+
+    const prediction = await Prediction.findOneAndDelete({
+      _id: req.params.id,
+      user: req.user._id,
+    });
+
+    if (!prediction) {
+      return res.status(404).json({
+        success: false,
+        message: 'Prediction not found.',
+      });
+    }
+
+    return res.status(200).json({
+      success: true,
+      message: 'Prediction deleted successfully.',
+    });
+  } catch (error) {
+    return next(error);
+  }
+}
+
+// GET /api/predictions/share/:token
+// Publicly retrieve a prediction only when sharing is enabled.
+async function getSharedPrediction(req, res, next) {
+  try {
+    const token = String(req.params.token || '');
+
+    if (!/^[a-f0-9]{48}$/i.test(token)) {
+      return res.status(404).json({
+        success: false,
+        message: 'Shared prediction not found.',
+      });
+    }
+
+    const prediction = await Prediction.findOne({
+      shareToken: token,
+      isPublic: true,
+    }).select('-user -shareToken');
+
+    if (!prediction) {
+      return res.status(404).json({
+        success: false,
+        message: 'Shared prediction not found or sharing is disabled.',
+      });
+    }
+
+    return res.status(200).json({
+      success: true,
+      prediction,
+    });
+  } catch (error) {
+    return next(error);
+  }
+}
+
+module.exports = {
+  createPrediction,
+  getPredictions,
+  getPrediction,
+  toggleShare,
+  deletePrediction,
+  getSharedPrediction,
+
+  // Retain these exports for existing code that imports the helpers.
+  predictColleges,
+  median,
+  calcScore,
+  getVerifiedCutoff,
+};
