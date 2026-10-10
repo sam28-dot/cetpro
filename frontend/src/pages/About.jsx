@@ -1,6 +1,6 @@
 /**
  * About.jsx — Founders, mission, vision, streams covered, data sources
- * Updated: "three Engineering Students", pharmacy + engineering coverage
+ * Public product story, founder details, data coverage and limitations
  */
 import React from 'react';
 import { Link } from 'react-router-dom';
@@ -228,9 +228,7 @@ export default function About() {
               Developed By
             </h2>
             <p style={{ color: 'var(--text2)', fontSize: 15, maxWidth: 520, lineHeight: 1.65 }}>
-              We are three Engineering students from Maharashtra. We built this
-              so that no future student — whether Engineering or Pharmacy — has
-              to go through what we did.
+              We are four student founders from Maharashtra. We built this so students exploring Engineering or Pharmacy can make more informed choices.
             </p>
           </div>
 
@@ -275,11 +273,7 @@ export default function About() {
             📊 Data Sources
           </h2>
           <p style={{ color: 'var(--text2)', fontSize: 15, marginBottom: 20, lineHeight: 1.75 }}>
-            Our cutoff database covers both <strong style={{ color: 'var(--text)' }}>Engineering</strong> and{' '}
-            <strong style={{ color: 'var(--text)' }}>Pharmacy</strong> streams, sourced from
-            DTE Maharashtra's official CAP round allotment lists (2019–2024).
-            We use Cap Round 1, 2, and 3 closing ranks for all categories and sub-categories.
-            Pharmacy data includes both PCB and PCM group cutoffs where applicable.
+            The app includes imported Maharashtra State CET Cell CAP records for the 2025–26 cycle. Coverage varies by stream, course, category, and available metric. We display only records the current implementation can match; this is not a complete or independently audited catalogue of every college and seat type.
           </p>
           <div className="card" style={{ overflow: 'hidden' }}>
             <table style={{ width: '100%', borderCollapse: 'collapse' }}>
@@ -308,15 +302,14 @@ export default function About() {
         {/* ── Algorithm ── */}
         <section style={{ marginBottom: 48 }}>
           <h2 style={{ fontFamily: 'var(--font-display)', fontSize: 'clamp(20px,2.5vw,26px)', fontWeight: 800, letterSpacing: '-0.3px', marginBottom: 16 }}>
-            🔢 Ranking Algorithm
+            🔎 How results are grouped
           </h2>
           <div className="card" style={{ padding: 24 }}>
             <p style={{ color: 'var(--text2)', fontSize: 15, lineHeight: 1.8, marginBottom: 18 }}>
-              Each college-branch (for both Engineering and Pharmacy) is scored on a{' '}
-              <strong style={{ color: 'var(--text)' }}>0–100 composite scale</strong>:
+              Results are grouped by the difference between the entered score and the matching historical cutoff. The labels below describe that comparison only; they are not admission chances:
             </p>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill,minmax(200px,1fr))', gap: 12 }}>
-              {ALGO.map(item => (
+              {[{ pct: '3+ points above', label: 'At/above historical cutoff' }, { pct: '−4 to +3 points', label: 'Near historical cutoff' }, { pct: 'Below −4 points', label: 'Below historical cutoff' }].map(item => (
                 <div key={item.label} style={{ padding: '12px 14px', background: 'var(--bg2)', borderRadius: 'var(--r3)', border: '1px solid var(--border)' }}>
                   <div style={{ fontFamily: 'var(--font-display)', fontSize: 22, fontWeight: 800, color: 'var(--accent2)', marginBottom: 4 }}>{item.pct}</div>
                   <div style={{ fontSize: 13, color: 'var(--text2)' }}>{item.label}</div>
@@ -333,9 +326,7 @@ export default function About() {
           </h2>
           <div className="warning-box">
             This tool is for <strong>educational guidance only</strong>. Actual cutoffs vary year-to-year
-            based on the applicant pool, seat matrix, and government policy changes. Always verify
-            with the official DTE Maharashtra CAP portal and your respective college before making
-            any admission decision. CET Predictor Pro is not affiliated with DTE Maharashtra,
+            based on the applicant pool, seat matrix, and government policy changes. Always verify with the current Maharashtra State CET Cell CAP portal and the college before making any admission decision. CET Predictor Pro is not affiliated with DTE Maharashtra,
             AICTE, PCI, or any government body.
           </div>
         </section>
