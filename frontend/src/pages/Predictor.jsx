@@ -11,13 +11,13 @@ import { predictionAPI } from '../utils/api';
 import { useAuth } from '../context/AuthContext';
 
 const ENGINEERING_BRANCHES = ['CSE','IT','AIML','DS','EXTC','MECH','CIVIL','ETRX','IOT','any'];
-const PHARMACY_BRANCHES    = ['BPHARM','PHARMD','MPHARM','any'];
+const PHARMACY_BRANCHES    = ['BPHARM','PHARMD','any'];
 
 const BRANCH_LABELS = {
   CSE:'Computer Science (CSE)', IT:'Information Technology', AIML:'AI / ML',
   DS:'Data Science', EXTC:'Electronics & TC', MECH:'Mechanical',
   CIVIL:'Civil', ETRX:'Electronics', IOT:'Internet of Things',
-  BPHARM:'B.Pharm', PHARMD:'Pharm.D', MPHARM:'M.Pharm',
+  BPHARM:'B.Pharm', PHARMD:'Pharm.D',
   any:'Any Branch',
 };
 
