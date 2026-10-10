@@ -5,16 +5,12 @@ const router = express.Router();
 const dataset = require('../data/official-cutoffs-2025-26.json');
 
 const records = Array.isArray(dataset.records) ? dataset.records : [];
-const normalise = (value) => String(value ?? '')
-  .normalize('NFKD')
-  .toLowerCase()
-  .replace(/\\bgovt\\b/g, 'government')
-  .replace(/\\bengg\\b/g, 'engineering')
-  .replace(/\\bkokan\\b/g, 'konkan')
-  .replace(/\\bgyanpeth\\b/g, 'gyanpeeth')
-  .replace(/[^a-z0-9]+/g, ' ')
-  .trim()
-  .replace(/\\s+/g, ' ');
+const normalise = (value) => {
+  const words = String(value ?? '').normalize('NFKD').toLowerCase()
+    .replace(/[^a-z0-9]+/g, ' ').trim().split(' ').filter(Boolean);
+  const aliases = { govt: 'government', engg: 'engineering', kokan: 'konkan', gyanpeth: 'gyanpeeth' };
+  return words.map((word) => aliases[word] || word).join(' ');
+};
 
 const CATEGORY_FAMILIES = {
   GOPENS: ['GOPENS', 'GOPENH', 'GOPENO'],
