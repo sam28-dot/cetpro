@@ -9,7 +9,7 @@
     "axios": "^1.6.8",
     "framer-motion": "^11.0.28",
     "jspdf": "^2.5.1",
-    "jspdf-autotable": "^3.8.2",
+    "jspdf-autotable": "^5.0.8",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-hot-toast": "^2.4.1",
