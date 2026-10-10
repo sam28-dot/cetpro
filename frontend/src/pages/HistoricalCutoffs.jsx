@@ -122,11 +122,10 @@ export default function HistoricalCutoffs() {
                 <option value="">All stages in dataset</option>
                 <option value="I">Stage I</option>
                 <option value="II">Stage II</option>
-                <option value="III">Stage III</option>
-                <option value="IV">Stage IV</option>
-                <option value="V">Stage V</option>
-                <option value="VI">Stage VI</option>
                 <option value="VII">Stage VII</option>
+                <option value="I-Non PWD">Stage I — Non-PWD</option>
+                <option value="I-Non Defence">Stage I — Non-Defence</option>
+                <option value="MH">MH</option>
               </select>
             </div>
             <div className="form-group">
