@@ -24,10 +24,13 @@ const app = express();
 // ── Security headers ──────────────────────────────────────────────
 app.use(helmet());
 
-// ── CORS ─────────────────────────────────────────────────────────
+// ── CORS ──────────────────────────────────────────────────────────
+// Keep the production frontend domains explicitly allow-listed.
+// FRONTEND_URL may be configured to a different primary deployment URL.
 const allowedOrigins = [
   process.env.FRONTEND_URL || 'http://localhost:3000',
   'https://cetpredictorpro.vercel.app',
+  'https://cetpro-predictor.vercel.app',
 ];
 app.use(cors({
   origin: (origin, cb) => {
@@ -46,7 +49,7 @@ if (process.env.NODE_ENV === 'development') {
   app.use(morgan('dev'));
 }
 
-// ── Global rate limiter ───────────────────────────────────────────
+// ── Global rate limiter ──────────────────────────────────────────
 const limiter = rateLimit({
   windowMs: parseInt(process.env.RATE_LIMIT_WINDOW_MS) || 15 * 60 * 1000,
   max: parseInt(process.env.RATE_LIMIT_MAX) || 100,
@@ -72,7 +75,7 @@ app.use('/api/colleges', collegeRoutes);
 app.use('/api/cutoffs', cutoffRoutes);
 app.use('/api/institutes', instituteRoutes);
 
-// ── Health check ──────────────────────────────────────────────────
+// ── Health check ─────────────────────────────────────────────────
 app.get('/api/health', (req, res) => {
   res.json({
     success: true,
