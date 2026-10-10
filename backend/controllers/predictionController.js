@@ -236,11 +236,17 @@ function predictColleges(input = {}) {
   if (!Array.isArray(preferred)) preferred = ['any'];
   preferred = preferred.map((value) => String(value).trim().toUpperCase());
 
-  const officialCategory = CATEGORY_TO_OFFICIAL_CODE[category];
-  if (!officialCategory) {
+  const baseCategoryCodes = CATEGORY_TO_OFFICIAL_CODE[category];
+  if (!baseCategoryCodes) {
     return { success: false, dataStatus: 'category_not_mapped',
-      message: 'No validated official state-level cutoff mapping is available for this category.', results };
+      message: 'No official cutoff category mapping is available for this category.', results };
   }
+  const gender = String(input.gender || 'any').trim().toLowerCase();
+  // For female applicants, include the matching ladies-reserved code alongside
+  // general seats. Never show ladies-only cutoffs as eligible for male applicants.
+  const officialCategory = gender === 'female'
+    ? [...new Set([...baseCategoryCodes, ...baseCategoryCodes.filter((code) => code.startsWith('G')).map((code) => code.replace(/^G/, 'L'))])]
+    : baseCategoryCodes;
 
   const expectedDomain = stream;
   // Maharashtra pharmacy CAP Round IV records publish the MH candidates' MHT-CET
