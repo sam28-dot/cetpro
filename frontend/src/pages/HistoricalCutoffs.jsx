@@ -131,10 +131,7 @@ export default function HistoricalCutoffs() {
             </div>
             <div className="form-group">
               <label className="form-label" htmlFor="hc-search">College or course (optional)</label>
-              <input id="hc-search" list="hc-college-options" style={inputStyle} value={search} onChange={e => setSearch(e.target.value)} placeholder="Search any Maharashtra college or course" />
-              <datalist id="hc-college-options">
-                {institutes.map(item => <option key={item.instituteCode || item.name} value={item.name} />)}
-              </datalist>
+              <input id="hc-search" style={inputStyle} value={search} onChange={e => setSearch(e.target.value)} placeholder="Search any Maharashtra college or course" />
               <div style={{ display: 'flex', justifyContent: 'space-between', gap: 10, alignItems: 'center', flexWrap: 'wrap', marginTop: 8 }}>
                 <span style={{ color: 'var(--text3)', fontSize: 12 }}>Search the official institute directory, or leave blank to compare all matching imported records.</span>
                 <button type="button" className="btn" onClick={() => setSearch('')} style={{ padding: '6px 10px', minHeight: 32 }}>Clear college search</button>
