@@ -21,6 +21,10 @@ const instituteRoutes = require('./routes/institutes');
 
 const app = express();
 
+// Render terminates TLS and forwards requests through one trusted proxy hop.
+// Configure this before rate limiters so Express can derive the client IP safely.
+app.set('trust proxy', 1);
+
 // ── Security headers ──────────────────────────────────────────────
 app.use(helmet());
 
