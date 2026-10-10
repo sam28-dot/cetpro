@@ -81,12 +81,29 @@ app.use('/api/institutes', instituteRoutes);
 
 // ── Health check ─────────────────────────────────────────────────
 app.get('/api/health', (req, res) => {
-  res.json({
-    success: true,
-    message: 'CET Predictor Pro API is running',
-    env: process.env.NODE_ENV,
+  const databaseState = mongoose.connection.readyState;
+  const databaseConnected = databaseState === 1;
+  const cutoffRecords = Array.isArray(require('./data/official-cutoffs-2025-26.json').records)
+    ? require('./data/official-cutoffs-2025-26.json').records.length
+    : 0;
+
+  const health = {
+    success: databaseConnected,
+    status: databaseConnected ? 'healthy' : 'degraded',
+    message: databaseConnected
+      ? 'CET Predictor Pro API is running'
+      : 'API is running but the database is not connected',
+    database: databaseConnected ? 'connected' : 'disconnected',
+    historicalCutoffs: {
+      academicYear: '2025-26',
+      round: 'CAP Round IV',
+      records: cutoffRecords,
+      mode: 'historical_comparison_only',
+    },
     timestamp: new Date().toISOString(),
-  });
+  };
+
+  res.status(databaseConnected ? 200 : 503).json(health);
 });
 
 // ── 404 handler ───────────────────────────────────────────────────
