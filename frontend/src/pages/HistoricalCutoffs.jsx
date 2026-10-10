@@ -16,6 +16,7 @@ const CATEGORIES = [
 export default function HistoricalCutoffs() {
   const [percentile, setPercentile] = useState('95');
   const [categoryCode, setCategoryCode] = useState('GOPENS');
+  const [availableCategories, setAvailableCategories] = useState(CATEGORIES.map(([value]) => value));
   const [stage, setStage] = useState('');
   const [search, setSearch] = useState('');
   const [records, setRecords] = useState([]);
@@ -28,6 +29,20 @@ export default function HistoricalCutoffs() {
   const [instituteLoading, setInstituteLoading] = useState(true);
   const [instituteError, setInstituteError] = useState('');
   const [instituteWarning, setInstituteWarning] = useState('');
+
+  useEffect(() => {
+    let active = true;
+    api.get('/cutoffs/categories')
+      .then(({ data }) => {
+        if (!active || !data.success || !Array.isArray(data.categories) || data.categories.length === 0) return;
+        setAvailableCategories(data.categories);
+        setCategoryCode(current => data.categories.includes(current) ? current : data.categories[0]);
+      })
+      .catch(() => {
+        // Keep the built-in common categories available if the API cannot provide the list.
+      });
+    return () => { active = false; };
+  }, []);
 
   useEffect(() => {
     let active = true;
@@ -175,7 +190,10 @@ export default function HistoricalCutoffs() {
             <div className="form-group">
               <label className="form-label" htmlFor="hc-category">Seat category code</label>
               <select id="hc-category" style={inputStyle} value={categoryCode} onChange={e => setCategoryCode(e.target.value)}>
-                {CATEGORIES.map(([value, label]) => <option key={value} value={value}>{label}</option>)}
+                {availableCategories.map(value => {
+                  const known = CATEGORIES.find(([code]) => code === value);
+                  return <option key={value} value={value}>{known ? known[1] : value}</option>;
+                })}
               </select>
             </div>
             <div className="form-group">
