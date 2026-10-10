@@ -17,7 +17,8 @@ const LOC_LABELS = { mumbai: 'Mumbai', pune: 'Pune', thane: 'Thane / Navi Mumbai
 
 export default function CollegeCard({ result, index, onCompare, isCompared, onSave, isSaved, delay = 0 }) {
   const { collegeName, branch, location, tier, fees, cutoffPercentile,
-    placementRate, avgPackage, maxPackage, autonomous, type, nirf, gap, score, category } = result;
+    placementRate, avgPackage, maxPackage, autonomous, type, nirf, gap, score, category,
+    officialCategoryCode, academicYear, cutoffRound, cutoffSourceUrl } = result;
 
   const catColor = { safe: 'var(--green)', moderate: 'var(--yellow)', dream: 'var(--red)' }[category];
   const isPharmacy = ['BPHARM', 'PHARMD', 'MPHARM', 'DPHARM'].includes(branch);
@@ -34,44 +35,45 @@ export default function CollegeCard({ result, index, onCompare, isCompared, onSa
     >
       {/* Top bar */}
       <div style={s.top}>
-        <span className={`badge badge-tier${tier}`}>Tier {tier}</span>
-        <span style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+        {tier != null && <span className={`badge badge-tier${tier}`}>Tier {tier}</span>}
+        {score > 0 && <span style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
           <span style={{ fontSize: 11, fontWeight: 700, color: 'var(--text3)' }}>Score</span>
           <span style={{ fontFamily: 'var(--font-display)', fontSize: 18, fontWeight: 800, color: 'var(--accent2)' }}>{score}</span>
-        </span>
+        </span>}
       </div>
 
       {/* Name */}
       <div style={s.name}>{collegeName}</div>
       <div style={s.branch}>{streamIcon} {BRANCH_LABELS[branch] || branch}</div>
       <div style={s.loc}>
-        📍 {LOC_LABELS[location] || location}
+        {location ? `📍 ${LOC_LABELS[location] || location}` : 'Location not verified'}
         {autonomous && <span style={s.autoBadge}>Autonomous</span>}
-        <span style={s.typeBadge}>{type}</span>
+        {type && <span style={s.typeBadge}>{type}</span>}
       </div>
 
       {/* Stats grid */}
       <div style={s.statsGrid}>
         <Stat label="Cutoff" val={cutoffPercentile?.toFixed(1)} color="var(--accent3)" />
-        <Stat label="Fees/yr" val={`₹${(fees / 1000).toFixed(0)}K`} />
-        <Stat label="Placement" val={`${placementRate}%`} color={placementRate >= 85 ? 'var(--green)' : 'var(--yellow)'} />
-        <Stat label="Avg Pkg" val={`₹${avgPackage}L`} color="var(--green)" />
-        <Stat label="Max Pkg" val={`₹${maxPackage}L`} />
+        <Stat label="Fees/yr" val={fees != null ? `₹${(fees / 1000).toFixed(0)}K` : '—'} />
+        <Stat label="Placement" val={placementRate != null ? `${placementRate}%` : '—'} color={placementRate >= 85 ? 'var(--green)' : 'var(--yellow)'} />
+        <Stat label="Avg Pkg" val={avgPackage != null ? `₹${avgPackage}L` : '—'} color="var(--green)" />
+        <Stat label="Max Pkg" val={maxPackage != null ? `₹${maxPackage}L` : '—'} />
         <Stat label="Your Gap" val={`${gap >= 0 ? '+' : ''}${gap?.toFixed(1)}`} color={gap >= 0 ? 'var(--green)' : 'var(--yellow)'} />
       </div>
 
-      {/* Placement bar */}
-      <div style={{ marginBottom: 14 }}>
-        <div style={{ fontSize: 11, color: 'var(--text3)', marginBottom: 5, fontWeight: 500 }}>Placement Rate</div>
-        <div style={s.barWrap}>
-          <motion.div
-            style={{ ...s.barFill, background: 'var(--grad2)' }}
-            initial={{ width: 0 }}
-            animate={{ width: `${placementRate}%` }}
-            transition={{ duration: 1, delay: delay + 0.3 }}
-          />
+      {placementRate != null && (
+        <div style={{ marginBottom: 14 }}>
+          <div style={{ fontSize: 11, color: 'var(--text3)', marginBottom: 5, fontWeight: 500 }}>Placement Rate</div>
+          <div style={s.barWrap}>
+            <motion.div style={{ ...s.barFill, background: 'var(--grad2)' }} initial={{ width: 0 }}
+              animate={{ width: `${placementRate}%` }} transition={{ duration: 1, delay: delay + 0.3 }} />
+          </div>
         </div>
-      </div>
+      )}
+      {officialCategoryCode && <div style={{ color: 'var(--text3)', fontSize: 11, marginBottom: 12 }}>
+        Official category: {officialCategoryCode} · {academicYear} {cutoffRound}
+        {cutoffSourceUrl && <> · <a href={cutoffSourceUrl} target="_blank" rel="noreferrer">Source</a></>}
+      </div>}
 
       {/* Footer actions */}
       <div style={s.footer}>
