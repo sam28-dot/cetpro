@@ -1,0 +1,33 @@
+version: 2
+updates:
+  - package-ecosystem: npm
+    directory: /frontend
+    schedule:
+      interval: weekly
+    open-pull-requests-limit: 10
+    groups:
+      frontend-patch-and-minor:
+        patterns:
+          - "*"
+        update-types:
+          - patch
+          - minor
+    labels:
+      - dependencies
+      - security
+
+  - package-ecosystem: npm
+    directory: /backend
+    schedule:
+      interval: weekly
+    open-pull-requests-limit: 10
+    groups:
+      backend-patch-and-minor:
+        patterns:
+          - "*"
+        update-types:
+          - patch
+          - minor
+    labels:
+      - dependencies
+      - security
