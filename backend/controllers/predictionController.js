@@ -108,7 +108,7 @@ function hasVerifiedCutoffs() {
 
 function normaliseText(value) {
   return String(value ?? '').normalize('NFKD').toLowerCase()
-    .replace(/[^a-z0-9]+/g, ' ').trim().replace(/\\s+/g, ' ');
+    .replace(/[^a-z0-9]+/g, ' ').trim().split(' ').filter(Boolean).join(' ');
 }
 
 function matchesPreferredBranch(course, preferred) {
@@ -230,7 +230,7 @@ function predictColleges(input = {}) {
     };
     if (gap >= 3) results.safe.push(entry);
     else if (gap >= -4) results.moderate.push(entry);
-    else if (gap >= -10) results.dream.push(entry);
+    else results.dream.push(entry);
   }
 
   for (const group of Object.values(results)) group.sort((a, b) => b.cutoffPercentile - a.cutoffPercentile);
