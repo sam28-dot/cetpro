@@ -4,7 +4,8 @@
   background: rgba(9,9,14,0.82);
   backdrop-filter: blur(24px) saturate(145%);
   -webkit-backdrop-filter: blur(20px);
-  border-bottom: 1px solid var(--border);\n  box-shadow: 0 8px 28px rgba(0,0,0,0.08);
+  border-bottom: 1px solid var(--border);
+  box-shadow: 0 8px 28px rgba(0,0,0,0.08);
   transition: background var(--t);
 }
 
