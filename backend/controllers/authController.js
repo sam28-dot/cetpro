@@ -102,15 +102,12 @@ exports.forgotPassword = async (req, res, next) => {
   try {
     const email = String(req.body.email || '').trim().toLowerCase();
     const user = await User.findOne({ email });
-    // Keep the response identical whether or not an account exists.
     const successMsg = 'If an account with that email exists, a verification code has been sent.';
     if (!user) return res.json({ success: true, message: successMsg });
-
     const otp = String(crypto.randomInt(0, 1000000)).padStart(6, '0');
     user.passwordResetToken = crypto.createHash('sha256').update(otp).digest('hex');
     user.passwordResetExpires = new Date(Date.now() + 10 * 60 * 1000);
     await user.save({ validateBeforeSave: false });
-
     try {
       await sendPasswordResetEmail(user.email, user.name, otp);
     } catch (emailErr) {
@@ -120,50 +117,28 @@ exports.forgotPassword = async (req, res, next) => {
       return res.status(503).json({ success: false, message: 'We could not send the email right now. Please try again later.' });
     }
     return res.json({ success: true, message: successMsg });
-  } catch (err) {
-    next(err);
-  }
+  } catch (err) { next(err); }
 };
 
-// ── Reset password: accept OTP or a legacy reset link token ──────────────────────────────────────────────────────
+// ── Reset password ────────────────────────────────────────────────
 exports.resetPassword = async (req, res, next) => {
   try {
     const { token, email, otp, password } = req.body;
-    let lookupToken = token;
-    if (email && otp) {
-      lookupToken = String(otp).trim();
-    }
-    if (!lookupToken) {
-      return res.status(400).json({ success: false, message: 'A valid verification code is required.' });
-    }
-
-    const hashedToken = crypto.createHash('sha256').update(lookupToken).digest('hex');
+    const lookupToken = email && otp ? String(otp).trim() : token;
+    if (!lookupToken) return res.status(400).json({ success: false, message: 'A valid verification code is required.' });
     const criteria = {
-      passwordResetToken: hashedToken,
+      passwordResetToken: crypto.createHash('sha256').update(lookupToken).digest('hex'),
       passwordResetExpires: { $gt: new Date() },
     };
     if (email && otp) criteria.email = String(email).trim().toLowerCase();
-
     const user = await User.findOne(criteria);
-    if (!user) {
-      return res.status(400).json({ success: false, message: 'The verification code is invalid or expired. Request a new code and try again.' });
-    }
-
+    if (!user) return res.status(400).json({ success: false, message: 'The verification code is invalid or expired. Request a new code and try again.' });
     user.password = password;
     user.passwordResetToken = undefined;
     user.passwordResetExpires = undefined;
     await user.save();
-
     const accessToken = user.generateAccessToken();
     const refreshToken = user.generateRefreshToken();
-    res.json({
-      success: true,
-      message: 'Password reset successful!',
-      accessToken,
-      refreshToken,
-      user: user.toSafeObject(),
-    });
-  } catch (err) {
-    next(err);
-  }
+    res.json({ success: true, message: 'Password reset successful!', accessToken, refreshToken, user: user.toSafeObject() });
+  } catch (err) { next(err); }
 };
