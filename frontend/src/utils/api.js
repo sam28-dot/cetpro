@@ -6,7 +6,9 @@
 
 import axios from 'axios';
 
-const BASE_URL = process.env.REACT_APP_API_URL || '/api';
+// Vercel serves the frontend while the Express API runs on Render. Keep the
+// environment override for custom deployments; never silently call Vercel /api.
+const BASE_URL = (process.env.REACT_APP_API_URL || 'https://cetpro-backend.onrender.com/api').replace(/\/$/, '');
 
 const api = axios.create({
   baseURL: BASE_URL,
