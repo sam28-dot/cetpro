@@ -48,4 +48,66 @@ router.get('/', (req, res) => {
   });
 });
 
+
+// GET /api/cutoffs/compare?percentile=95&categoryCode=GOPENS
+// Historical comparison only. This deliberately supports engineering MH
+// percentile records only; it does not estimate admission probability.
+router.get('/compare', (req, res) => {
+  const percentile = Number(req.query.percentile);
+  const categoryCode = String(req.query.categoryCode || '').trim().toUpperCase();
+  const search = normalise(req.query.search);
+  const stage = String(req.query.stage || '').trim().toUpperCase();
+
+  if (!Number.isFinite(percentile) || percentile < 0 || percentile > 100) {
+    return res.status(400).json({ success: false, message: 'Provide percentile from 0 to 100.' });
+  }
+  if (!categoryCode || !/^[A-Z0-9 -]{2,20}$/.test(categoryCode)) {
+    return res.status(400).json({ success: false, message: 'Provide the exact official categoryCode, e.g. GOPENS. No automatic category mapping is applied.' });
+  }
+
+  let filtered = records.filter((r) =>
+    r.domain === 'engineering' &&
+    r.route === 'MH' &&
+    r.bracketMetric === 'merit_percentile' &&
+    r.parsed === true &&
+    normalise(r.categoryCode) === normalise(categoryCode)
+  );
+
+  if (stage) filtered = filtered.filter((r) => String(r.stage || '').toUpperCase() === stage);
+  if (search) {
+    filtered = filtered.filter((r) =>
+      [r.college, r.course, r.choiceCode, r.collegeCode]
+        .some((value) => normalise(value).includes(search))
+    );
+  }
+
+  const comparisons = filtered.map((r) => ({
+    ...r,
+    percentileDifference: Number((percentile - Number(r.bracketValue)).toFixed(4)),
+    historicalComparison: percentile >= Number(r.bracketValue)
+      ? 'candidate_percentile_at_or_above_historical_cutoff'
+      : 'candidate_percentile_below_historical_cutoff',
+  }));
+
+  comparisons.sort((a, b) => {
+    if (a.historicalComparison !== b.historicalComparison) {
+      return a.historicalComparison === 'candidate_percentile_at_or_above_historical_cutoff' ? -1 : 1;
+    }
+    return Number(b.bracketValue) - Number(a.bracketValue);
+  });
+
+  res.json({
+    success: true,
+    mode: 'historical_comparison_only',
+    predictionEnabled: false,
+    academicYear: dataset.academicYear,
+    round: dataset.round,
+    metric: 'MHT-CET merit percentile',
+    input: { percentile, categoryCode, search: search || null, stage: stage || null },
+    total: comparisons.length,
+    records: comparisons.slice(0, 100),
+    note: 'This compares a percentile against extracted historical cutoffs only. It is not an admission prediction or guarantee. Category/seat eligibility, gender, home-university status, and current-year rules are not inferred.',
+  });
+});
+
 module.exports = router;
