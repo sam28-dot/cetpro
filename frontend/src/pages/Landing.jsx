@@ -13,24 +13,24 @@ const fadeUp = (delay = 0) => ({
 });
 
 const FEATURES = [
-  { icon: '🧠', title: 'Smart Prediction Engine',    desc: 'Cross-references your percentile against 5 years of DTE Maharashtra CAP round data for 25+ colleges and 10 branches with category quota adjustments.' },
-  { icon: '🏆', title: 'Composite Ranking Score',    desc: 'Custom algorithm weighing placement rate (30%), avg package (20%), NIRF rank (15%), cutoff stability, fees-to-value, and autonomous status.' },
-  { icon: '⚖️',  title: 'Side-by-Side Compare',      desc: 'Add up to 4 colleges to a comparison table across 12 parameters — fees, placements, packages, tier, NIRF rank, and more.' },
-  { icon: '📍', title: 'Location Intelligence',      desc: 'Filter by Mumbai, Pune, Nagpur, Nashik, Aurangabad. Home university quota is factored into every prediction.' },
-  { icon: '📄', title: 'PDF Report Download',        desc: 'Generate a full personalised report with your shortlist, stats, and scores. Share with parents or your counsellor.' },
-  { icon: '🔗', title: 'Shareable Result Links',     desc: 'Make your prediction public with one click and share a direct link — perfect for guidance sessions and group decisions.' },
+  { icon: '🧠', title: 'Smart Prediction Engine',    desc: 'Explore imported Maharashtra CAP cutoff records using your percentile, stream, category, and preferences. Results are historical references, not admission guarantees.' },
+  { icon: '🏆', title: 'Composite Ranking Score',    desc: 'Review available college and cutoff details side by side. Missing or unverified fees and placement figures are not fabricated.' },
+  { icon: '⚖️',  title: 'Side-by-Side Compare',      desc: 'Compare supported college information where records are available, and keep your shortlist easier to review.' },
+  { icon: '📍', title: 'Location Intelligence',      desc: 'Narrow results using available location and preference fields. Check official eligibility and home-university rules separately.' },
+  { icon: '📄', title: 'PDF Report Download',        desc: 'Export a shareable PDF summary of available results to discuss with family or a counsellor.' },
+  { icon: '🔗', title: 'Shareable Result Links',     desc: 'Share a result link when sharing is enabled, so family or counsellors can review the same shortlist.' },
 ];
 
 const HOW_IT_WORKS = [
-  { n: '01', title: 'Enter Your Score',         desc: 'Input your MHT-CET percentile or raw PCM marks. Select your category (General, OBC, SC, ST…), home university, and preferred branches. Our converter handles marks → percentile automatically.' },
-  { n: '02', title: 'AI Analyses Your Profile', desc: 'The engine applies category quota adjustments and cross-references your effective percentile against 5-year cutoff medians for every college-branch pair in our database.' },
-  { n: '03', title: 'Get Your Personalised List', desc: 'Receive a ranked shortlist of Safe, Moderate, and Dream colleges. Filter, compare, save, and download your results — all stored in your account.' },
+  { n: '01', title: 'Enter Your Score',         desc: 'Enter your percentile and choose your stream, category, and preferences. Use an official scorecard percentile whenever possible.' },
+  { n: '02', title: 'AI Analyses Your Profile', desc: 'The app compares your entered percentile against the matching imported historical records. It does not establish seat eligibility or admission probability.' },
+  { n: '03', title: 'Get Your Personalised List', desc: 'Review the available matching results, compare options, and export a report. Treat every result as a historical reference.' },
 ];
 
 const STATS = [
-  { num: '40+',   label: 'Colleges Listed',      color: 'var(--accent2)' },
+  { num: '2025–26', label: 'CAP reference year', color: 'var(--accent2)' },
   { num: '2',     label: 'Streams Covered',       color: 'var(--green)'   },
-  { num: '5 Yrs', label: 'Cutoff Data',           color: 'var(--yellow)'  },
+  { num: 'Official', label: 'Source documents', color: 'var(--yellow)' },
   { num: 'Free',  label: 'Always',                color: 'var(--accent3)' },
 ];
 
@@ -49,7 +49,7 @@ export default function Landing() {
 
             <motion.div {...fadeUp(0)} style={{ display: 'inline-flex', alignItems: 'center', gap: 8, padding: '6px 16px', borderRadius: 99, background: 'rgba(108,99,255,0.1)', border: '1px solid rgba(108,99,255,0.22)', fontSize: 13, fontWeight: 500, color: 'var(--accent2)', marginBottom: 28 }}>
               <span className="pulse" style={{ width: 7, height: 7, borderRadius: '50%', background: 'var(--accent2)', display: 'inline-block', flexShrink: 0 }} />
-              AI-Powered · Engineering &amp; Pharmacy · MHT-CET 2025-26 Data
+              Engineering &amp; Pharmacy · Historical CAP references · Built for Maharashtra students
             </motion.div>
 
             <motion.h1 {...fadeUp(0.08)} style={{ fontFamily: 'var(--font-display)', fontSize: 'clamp(38px,6.5vw,76px)', fontWeight: 800, lineHeight: 1.06, letterSpacing: '-2.5px', marginBottom: 20 }}>
@@ -59,10 +59,10 @@ export default function Landing() {
             </motion.h1>
 
             <motion.p {...fadeUp(0.16)} style={{ fontSize: 'clamp(16px,2vw,20px)', color: 'var(--text2)', maxWidth: 560, margin: '0 auto 36px', lineHeight: 1.7 }}>
-              Maharashtra's most advanced MHT-CET college predictor for students
+              A practical MHT-CET college research tool for students
               willing to pursue <strong style={{ color: 'var(--text)' }}>Engineering</strong> or{' '}
               <strong style={{ color: 'var(--text)' }}>Pharmacy</strong>. Get your
-              personalised shortlist in seconds — for free.
+              clearer historical comparisons and a more organised shortlist.
             </motion.p>
 
             <motion.div {...fadeUp(0.22)} style={{ display: 'flex', gap: 12, justifyContent: 'center', flexWrap: 'wrap', marginBottom: 60 }}>
