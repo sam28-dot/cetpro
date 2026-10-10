@@ -6,14 +6,12 @@ services:
     name: cetpro-backend
     runtime: node
     rootDir: backend
-    buildCommand: npm install
+    buildCommand: npm ci
     startCommand: node server.js
     healthCheckPath: /api/health
     envVars:
       - key: NODE_ENV
         value: production
-      - key: PORT
-        value: 10000
       - key: MONGODB_URI
         sync: false          # Set in Render dashboard (secret)
       - key: JWT_SECRET
