@@ -1,0 +1,65 @@
+name: Production smoke checks
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+  schedule:
+    - cron: "17 */6 * * *"
+
+permissions:
+  contents: read
+
+jobs:
+  production-smoke:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Check Render API health and database
+        env:
+          API_HEALTH_URL: https://cetpro-backend.onrender.com/api/health
+        run: |
+          set -euo pipefail
+          body=""
+          status=""
+          for attempt in $(seq 1 12); do
+            status="$(curl --silent --show-error --max-time 15 -o /tmp/health.json -w '%{http_code}' "$API_HEALTH_URL" || true)"
+            body="$(cat /tmp/health.json 2>/dev/null || true)"
+            if [ "$status" = "200" ] && printf '%s' "$body" | node -e '
+              let s = "";
+              process.stdin.on("data", d => s += d);
+              process.stdin.on("end", () => {
+                try {
+                  const h = JSON.parse(s);
+                  const ok = h.success === true &&
+                    h.database === "connected" &&
+                    h.historicalCutoffs?.records >= 16000;
+                  if (!ok) {
+                    console.error("Health response is not production-ready:", JSON.stringify({
+                      status: h.status, database: h.database,
+                      cutoffRecords: h.historicalCutoffs?.records
+                    }));
+                    process.exit(1);
+                  }
+                  console.log("Render API healthy; database connected; cutoff records:", h.historicalCutoffs.records);
+                } catch (e) {
+                  console.error("Invalid health JSON:", e.message);
+                  process.exit(1);
+                }
+              });
+            '; then
+              exit 0
+            fi
+            echo "Health attempt $attempt/12 returned HTTP $status; retrying in 10 seconds."
+            sleep 10
+          done
+          echo "Production API failed health verification. Last response:"
+          printf '%s\n' "$body"
+          exit 1
+
+      - name: Check public frontend responds
+        run: |
+          set -euo pipefail
+          curl --fail --silent --show-error --location --max-time 30 https://cetpro-predictor.vercel.app/ -o /tmp/frontend.html
+          grep -qi '<html' /tmp/frontend.html
+          echo "Vercel frontend returned HTML successfully."
