@@ -384,3 +384,103 @@ body { background:radial-gradient(ellipse 75% 42% at 50% -15%,rgba(101,87,232,.1
 [data-theme='dark'] body { background:radial-gradient(ellipse 75% 42% at 50% -15%,rgba(117,104,255,.13),transparent 72%),var(--bg); }
 [data-theme='emerald'] body { background:radial-gradient(ellipse 75% 42% at 50% -15%,rgba(16,168,120,.10),transparent 72%),var(--bg); }
 [data-theme='violet'] body { background:radial-gradient(ellipse 75% 42% at 50% -15%,rgba(168,85,247,.11),transparent 72%),var(--bg); }
+
+
+/* ── MHT-CET Predictor Pro: three curated theme palettes ───────── */
+/* Dark Mode: charcoal black, forest green, crimson red */
+[data-theme='dark'] {
+  color-scheme: dark;
+  --bg: #111412;
+  --bg2: #171c18;
+  --bg3: #202822;
+  --surface: #1c231e;
+  --surface2: #273129;
+  --border: rgba(226, 239, 228, .09);
+  --border2: rgba(226, 239, 228, .16);
+  --text: #f1f5f0;
+  --text2: #b8c5ba;
+  --text3: #849487;
+  --accent: #286b43;
+  --accent2: #4d9665;
+  --accent3: #d7263d;
+  --green: #60b77a;
+  --yellow: #e2bd63;
+  --red: #e13c50;
+  --orange: #e38b52;
+  --grad1: linear-gradient(125deg, #245b39 0%, #347b4e 58%, #c52238 100%);
+  --grad2: linear-gradient(120deg, #286b43 0%, #4d9665 100%);
+  --grad3: linear-gradient(120deg, #b91c35 0%, #e13c50 100%);
+  --shadow: 0 20px 60px rgba(0, 0, 0, .38);
+  --shadow2: 0 8px 26px rgba(0, 0, 0, .24);
+}
+
+/* Light Mode: ivory white, gold, deep Atlas navy */
+[data-theme='light'] {
+  color-scheme: light;
+  --bg: #f7f4eb;
+  --bg2: #efe9d9;
+  --bg3: #e6dcc5;
+  --surface: #fffdf7;
+  --surface2: #f7f0df;
+  --border: rgba(20, 43, 74, .10);
+  --border2: rgba(20, 43, 74, .18);
+  --text: #142b4a;
+  --text2: #43566f;
+  --text3: #778397;
+  --accent: #142b4a;
+  --accent2: #1e4168;
+  --accent3: #bd9130;
+  --green: #28734c;
+  --yellow: #a77819;
+  --red: #b42336;
+  --orange: #b96a32;
+  --grad1: linear-gradient(125deg, #142b4a 0%, #254a70 58%, #c49a3a 100%);
+  --grad2: linear-gradient(120deg, #1e4168 0%, #c49a3a 100%);
+  --grad3: linear-gradient(120deg, #a77819 0%, #d3ae58 100%);
+  --shadow: 0 20px 60px rgba(20, 43, 74, .12);
+  --shadow2: 0 8px 26px rgba(20, 43, 74, .08);
+}
+
+/* System Mode: cosmic latte, mocha cream, deep burgundy.
+   This is a deliberate third palette, not OS auto-switching. */
+[data-theme='system'] {
+  color-scheme: light;
+  --bg: #f4ead9;
+  --bg2: #eadbc5;
+  --bg3: #ddc7aa;
+  --surface: #fff8e9;
+  --surface2: #f1e3ce;
+  --border: rgba(91, 30, 49, .11);
+  --border2: rgba(91, 30, 49, .19);
+  --text: #44232e;
+  --text2: #704e55;
+  --text3: #92787a;
+  --accent: #641b32;
+  --accent2: #842b45;
+  --accent3: #b58b68;
+  --green: #47745a;
+  --yellow: #9b6d2e;
+  --red: #a72742;
+  --orange: #b56b43;
+  --grad1: linear-gradient(125deg, #641b32 0%, #84344b 58%, #b58b68 100%);
+  --grad2: linear-gradient(120deg, #704052 0%, #b58b68 100%);
+  --grad3: linear-gradient(120deg, #842b45 0%, #b84c61 100%);
+  --shadow: 0 20px 60px rgba(91, 30, 49, .13);
+  --shadow2: 0 8px 26px rgba(91, 30, 49, .08);
+}
+
+/* Palette-aware accents and page glow */
+body {
+  background: radial-gradient(ellipse 75% 42% at 50% -15%, color-mix(in srgb, var(--accent) 12%, transparent), transparent 72%), var(--bg);
+}
+.btn-primary { background: var(--accent); border-color: var(--accent); color: #fff; }
+.btn-primary:hover { background: var(--accent2); border-color: var(--accent2); box-shadow: 0 6px 24px color-mix(in srgb, var(--accent) 30%, transparent); }
+.btn-grad { background: var(--grad1); color: #fff; }
+.btn-grad:hover { box-shadow: 0 6px 24px color-mix(in srgb, var(--accent) 28%, transparent); }
+.btn-danger { color: var(--red); }
+.badge-safe { background: color-mix(in srgb, var(--green) 12%, transparent); color: var(--green); border-color: color-mix(in srgb, var(--green) 28%, transparent); }
+.badge-moderate { background: color-mix(in srgb, var(--yellow) 13%, transparent); color: var(--yellow); border-color: color-mix(in srgb, var(--yellow) 28%, transparent); }
+.badge-dream { background: color-mix(in srgb, var(--red) 12%, transparent); color: var(--red); border-color: color-mix(in srgb, var(--red) 28%, transparent); }
+.badge-tier1, .badge-tier2 { background: color-mix(in srgb, var(--accent) 10%, transparent); color: var(--accent2); border-color: color-mix(in srgb, var(--accent) 22%, transparent); }
+.form-input:focus, .form-select:focus { box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 16%, transparent); }
+::selection { background: color-mix(in srgb, var(--accent3) 32%, transparent); color: var(--text); }
