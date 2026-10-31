@@ -3,8 +3,8 @@
  * Used in Results page and PredictionDetail page.
  */
 
-import React from 'react';
-import { motion } from 'framer-motion';
+import React, { useEffect, useState } from 'react';
+import { motion, useReducedMotion } from 'framer-motion';
 
 const BRANCH_LABELS = {
   CSE: 'Computer Science (CSE)', IT: 'Information Technology', AIML: 'AI / ML',
@@ -14,6 +14,28 @@ const BRANCH_LABELS = {
   any: 'Any Branch',
 };
 const LOC_LABELS = { mumbai: 'Mumbai', pune: 'Pune', thane: 'Thane / Navi Mumbai', nagpur: 'Nagpur', nashik: 'Nashik', aurangabad: 'Aurangabad', kolhapur: 'Kolhapur', solapur: 'Solapur' };
+
+function AnimatedScore({ value }) {
+  const reduceMotion = useReducedMotion();
+  const target = Number(value);
+  const [shown, setShown] = useState(reduceMotion || !Number.isFinite(target) ? target : 0);
+  useEffect(() => {
+    if (!Number.isFinite(target)) return;
+    if (reduceMotion) { setShown(target); return; }
+    let frame;
+    const start = performance.now();
+    const duration = 720;
+    const tick = now => {
+      const t = Math.min(1, (now - start) / duration);
+      const eased = 1 - Math.pow(1 - t, 3);
+      setShown(target * eased);
+      if (t < 1) frame = requestAnimationFrame(tick);
+    };
+    frame = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(frame);
+  }, [target, reduceMotion]);
+  return <>{Number.isInteger(target) ? Math.round(shown) : shown.toFixed(1)}</>;
+}
 
 export default function CollegeCard({ result, index, onCompare, isCompared, onSave, isSaved, delay = 0 }) {
   const { collegeName, branch, stream, location, tier, fees, cutoffPercentile,
@@ -38,7 +60,12 @@ export default function CollegeCard({ result, index, onCompare, isCompared, onSa
         {tier != null && <span className={`badge badge-tier${tier}`}>Tier {tier}</span>}
         {score > 0 && <span style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
           <span style={{ fontSize: 11, fontWeight: 700, color: 'var(--text3)' }}>Score</span>
-          <span style={{ fontFamily: 'var(--font-display)', fontSize: 18, fontWeight: 800, color: 'var(--accent2)' }}>{score}</span>
+          <motion.span
+            style={{ fontFamily: 'var(--font-display)', fontSize: 18, fontWeight: 800, color: 'var(--accent2)', display: 'inline-block' }}
+            initial={{ scale: 0.88, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            transition={{ duration: 0.35, delay: delay + 0.12 }}
+          ><AnimatedScore value={score} /></motion.span>
         </span>}
       </div>
 
@@ -107,7 +134,12 @@ export default function CollegeCard({ result, index, onCompare, isCompared, onSa
 const Stat = ({ label, val, color }) => (
   <div>
     <div style={{ fontSize: 10, fontWeight: 700, color: 'var(--text3)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 2 }}>{label}</div>
-    <div style={{ fontSize: 15, fontWeight: 700, color: color || 'var(--text)' }}>{val}</div>
+    <motion.div
+      style={{ fontSize: 15, fontWeight: 700, color: color || 'var(--text)' }}
+      initial={{ opacity: 0, y: 5 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.28, delay: 0.08 }}
+    >{val}</motion.div>
   </div>
 );
 
