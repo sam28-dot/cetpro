@@ -62,6 +62,7 @@ const AppShell = () => {
   return (
     <>
       {!isAuthPage && <Navbar />}
+      <div key={pathname} className="route-transition">
       <Routes>
         {/* Public */}
         <Route path="/"          element={<Landing />} />
@@ -84,6 +85,7 @@ const AppShell = () => {
 
         <Route path="*" element={<NotFound />} />
       </Routes>
+      </div>
       {!isAuthPage && user && <BottomNav />}
     </>
   );
