@@ -484,3 +484,87 @@ body {
 .badge-tier1, .badge-tier2 { background: color-mix(in srgb, var(--accent) 10%, transparent); color: var(--accent2); border-color: color-mix(in srgb, var(--accent) 22%, transparent); }
 .form-input:focus, .form-select:focus { box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 16%, transparent); }
 ::selection { background: color-mix(in srgb, var(--accent3) 32%, transparent); color: var(--text); }
+
+
+/* ── Premium motion system: subtle, purposeful, accessible ─────── */
+@keyframes cetpro-rise-in {
+  from { opacity: 0; transform: translate3d(0, 16px, 0); }
+  to   { opacity: 1; transform: translate3d(0, 0, 0); }
+}
+@keyframes cetpro-fade-in {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+@keyframes cetpro-soft-glow {
+  0%, 100% { box-shadow: 0 0 0 rgba(0,0,0,0); }
+  50% { box-shadow: 0 0 28px color-mix(in srgb, var(--accent) 12%, transparent); }
+}
+@keyframes cetpro-shimmer {
+  from { background-position: 180% 0; }
+  to { background-position: -180% 0; }
+}
+@keyframes cetpro-ring-in {
+  from { stroke-dashoffset: 283; }
+  to { stroke-dashoffset: var(--ring-progress, 0); }
+}
+
+/* Entering content feels deliberate without slowing navigation. */
+.page-wrapper { animation: cetpro-fade-in .38s ease-out both; }
+.page-header { animation: cetpro-rise-in .48s cubic-bezier(.2,.75,.25,1) both; }
+.page-header > * { animation: cetpro-rise-in .55s cubic-bezier(.2,.75,.25,1) both; }
+.page-header > *:nth-child(2) { animation-delay: .06s; }
+.page-header > *:nth-child(3) { animation-delay: .12s; }
+.card, .stat-card, .college-card, .result-card, .feature-card {
+  transition: transform .24s cubic-bezier(.2,.75,.25,1), box-shadow .24s ease,
+              border-color .24s ease, background-color .24s ease;
+}
+.card-hover:hover, .college-card:hover, .feature-card:hover {
+  transform: translateY(-3px);
+  box-shadow: var(--shadow);
+  border-color: color-mix(in srgb, var(--accent) 32%, var(--border));
+}
+.stat-card:hover { transform: translateY(-2px); }
+.btn:not(:disabled) { transition: transform .18s ease, box-shadow .22s ease, filter .22s ease; }
+.btn:not(:disabled):hover { filter: brightness(1.045); }
+.btn:not(:disabled):active { transform: translateY(1px) scale(.985); }
+a { transition: color .18s ease; }
+.form-input, .form-select, textarea {
+  transition: border-color .2s ease, box-shadow .2s ease, background-color .2s ease;
+}
+.form-input:focus, .form-select:focus, textarea:focus {
+  box-shadow: 0 0 0 4px color-mix(in srgb, var(--accent) 12%, transparent);
+}
+table tbody tr { transition: background-color .18s ease; }
+table tbody tr:hover { background: color-mix(in srgb, var(--accent) 5%, transparent); }
+img { transition: opacity .2s ease; }
+
+/* Opt-in stagger classes for metric tiles and result lists. */
+.motion-stagger > * { animation: cetpro-rise-in .42s cubic-bezier(.2,.75,.25,1) both; }
+.motion-stagger > *:nth-child(1) { animation-delay: .03s; }
+.motion-stagger > *:nth-child(2) { animation-delay: .09s; }
+.motion-stagger > *:nth-child(3) { animation-delay: .15s; }
+.motion-stagger > *:nth-child(4) { animation-delay: .21s; }
+.motion-stagger > *:nth-child(5) { animation-delay: .27s; }
+.motion-stagger > *:nth-child(6) { animation-delay: .33s; }
+
+/* Lightweight skeleton shimmer for elements already marked as loading. */
+.skeleton, .loading-skeleton {
+  background: linear-gradient(100deg, var(--surface2) 20%, color-mix(in srgb, var(--text) 8%, var(--surface2)) 42%, var(--surface2) 64%);
+  background-size: 220% 100%;
+  animation: cetpro-shimmer 1.5s ease-in-out infinite;
+}
+
+/* Respect users who have asked their device for reduced motion. */
+@media (prefers-reduced-motion: reduce) {
+  .page-wrapper, .page-header, .page-header > *, .motion-stagger > *,
+  .skeleton, .loading-skeleton {
+    animation: none !important;
+  }
+  .card, .stat-card, .college-card, .result-card, .feature-card,
+  .btn, a, .form-input, .form-select, textarea, table tbody tr, img {
+    transition: none !important;
+  }
+  .card-hover:hover, .college-card:hover, .feature-card:hover, .stat-card:hover {
+    transform: none !important;
+  }
+}
