@@ -7,9 +7,10 @@
 import axios from 'axios';
 
 // Vercel serves the frontend while the Express API runs on Render. Keep the
-// environment override for custom deployments; never silently call Vercel /api.
+// environment override for custom deployments; use the known deployed API as
+// the production fallback. Local development uses the CRA proxy.
 const isLocalhost = typeof window !== 'undefined' && ['localhost', '127.0.0.1'].includes(window.location.hostname);
-const BASE_URL = (process.env.REACT_APP_API_URL || (isLocalhost ? '/api' : 'https://cetpro-backend.onrender.com/api')).replace(/\/$/, '');
+const BASE_URL = (process.env.REACT_APP_API_URL || (isLocalhost ? '/api' : 'https://cetpro-0kjj.onrender.com/api')).replace(/\/$/, '');
 
 const api = axios.create({
   baseURL: BASE_URL,
@@ -41,9 +42,8 @@ api.interceptors.response.use(
   async (error) => {
     const originalRequest = error.config;
 
-    if (error.response?.status === 401 && !originalRequest._retry) {
+    if (error.response?.status === 401 && originalRequest && !originalRequest._retry) {
       if (isRefreshing) {
-        // Queue up other 401s while refresh is in progress
         return new Promise((resolve, reject) => {
           failedQueue.push({ resolve, reject });
         })
@@ -60,9 +60,10 @@ api.interceptors.response.use(
       const refreshToken = localStorage.getItem('refreshToken');
       if (!refreshToken) {
         isRefreshing = false;
+        processQueue(error, null);
         localStorage.removeItem('accessToken');
         localStorage.removeItem('refreshToken');
-        window.location.href = '/login';
+        if (typeof window !== 'undefined') window.location.href = '/login';
         return Promise.reject(error);
       }
 
@@ -77,7 +78,7 @@ api.interceptors.response.use(
         processQueue(refreshError, null);
         localStorage.removeItem('accessToken');
         localStorage.removeItem('refreshToken');
-        window.location.href = '/login';
+        if (typeof window !== 'undefined') window.location.href = '/login';
         return Promise.reject(refreshError);
       } finally {
         isRefreshing = false;
