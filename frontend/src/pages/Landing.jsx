@@ -91,8 +91,14 @@ export default function Landing() {
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill,minmax(300px,1fr))', gap: 18 }}>
             {FEATURES.map((f, i) => (
               <motion.div key={f.title} className="card card-hover feature-card"
-                initial={{ opacity: 0, y: 24 }} whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }} transition={{ duration: 0.4, delay: i * 0.06 }}>
+                initial={{ opacity: 0, y: 30, rotateX: 8, scale: 0.97 }}
+                whileInView={{ opacity: 1, y: 0, rotateX: 0, scale: 1 }}
+                whileHover={{ y: -8, rotateX: 3, rotateY: -3, scale: 1.015, z: 18,
+                  boxShadow: '0 24px 55px rgba(0,0,0,0.22)' }}
+                whileTap={{ scale: 0.985 }}
+                viewport={{ once: true, amount: 0.2 }}
+                style={{ transformPerspective: 900, transformStyle: 'preserve-3d', willChange: 'transform' }}
+                transition={{ type: 'spring', stiffness: 260, damping: 22, delay: i * 0.06 }}>
                 <div style={{ fontSize: 28, marginBottom: 14 }}>{f.icon}</div>
                 <div style={{ fontFamily: 'var(--font-display)', fontSize: 17, fontWeight: 700, marginBottom: 8 }}>{f.title}</div>
                 <div style={{ fontSize: 14, color: 'var(--text2)', lineHeight: 1.7 }}>{f.desc}</div>
