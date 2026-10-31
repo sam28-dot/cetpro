@@ -568,3 +568,55 @@ img { transition: opacity .2s ease; }
     transform: none !important;
   }
 }
+
+
+/* ── Premium 3D motion: lightweight CSS, no extra dependencies ── */
+.hero-glow {
+  transform-style: preserve-3d;
+  perspective: 1100px;
+  animation: cetpro-hero-float 8s ease-in-out infinite;
+  will-change: transform;
+}
+.hero-grid {
+  transform: perspective(900px) rotateX(2deg);
+  transform-origin: center top;
+  backface-visibility: hidden;
+}
+.feature-card {
+  transform-style: preserve-3d;
+  perspective: 900px;
+  will-change: transform;
+}
+.feature-card > * {
+  transform: translateZ(0);
+  transition: transform .32s cubic-bezier(.2,.75,.25,1);
+}
+.feature-card:hover > * {
+  transform: translateZ(12px);
+}
+.feature-card:hover {
+  transform: perspective(900px) rotateX(2deg) rotateY(-1.5deg) translateY(-5px);
+  box-shadow: 0 22px 48px color-mix(in srgb, var(--accent) 16%, transparent), var(--shadow2);
+}
+.stat-num {
+  display: inline-block;
+  transform: translateZ(0);
+  transition: transform .3s cubic-bezier(.2,.75,.25,1), text-shadow .3s ease;
+}
+.stat-num:hover {
+  transform: perspective(500px) rotateX(-8deg) scale(1.06);
+  text-shadow: 0 8px 24px color-mix(in srgb, var(--accent2) 25%, transparent);
+}
+@keyframes cetpro-hero-float {
+  0%, 100% { transform: perspective(1100px) rotateX(0deg) translateY(0); }
+  50% { transform: perspective(1100px) rotateX(1.2deg) translateY(-5px); }
+}
+@media (hover: none) {
+  .feature-card:hover { transform: none; }
+  .feature-card:hover > * { transform: none; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .hero-glow { animation: none !important; transform: none !important; }
+  .hero-grid { transform: none !important; }
+  .feature-card, .feature-card > *, .stat-num { transition: none !important; transform: none !important; }
+}
