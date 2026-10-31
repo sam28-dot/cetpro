@@ -6,16 +6,17 @@ import React, { createContext, useContext, useState, useEffect } from 'react';
 
 const ThemeContext = createContext(null);
 export const THEMES = [
-  { id: 'light', label: 'Blue & White', icon: '☀️' },
-  { id: 'dark', label: 'Midnight', icon: '🌙' },
-  { id: 'emerald', label: 'Emerald', icon: '🌿' },
-  { id: 'violet', label: 'Violet', icon: '💜' },
+  { id: 'dark', label: 'Dark Mode', icon: '🌙' },
+  { id: 'light', label: 'Light Mode', icon: '☀️' },
+  { id: 'system', label: 'System Mode', icon: '☕' },
 ];
 
 export const ThemeProvider = ({ children }) => {
   const [theme, setTheme] = useState(() => {
     try {
       const saved = localStorage.getItem('theme');
+      // Migrate removed theme presets to the closest supported palette.
+      if (saved === 'emerald' || saved === 'violet') return 'system';
       return THEMES.some(item => item.id === saved) ? saved : 'light';
     } catch {
       return 'light';
