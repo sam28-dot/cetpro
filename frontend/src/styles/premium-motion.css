@@ -1,9 +1,9 @@
 /* App-wide visible motion layer — deliberately obvious but performance-conscious. */
 :root { --cet-motion-ease: cubic-bezier(.2,.8,.2,1); }
 html { scroll-behavior: smooth; }
-#root { position: relative; isolation: isolate; }
+#root { position: relative; z-index: 1; isolation: isolate; }
 body::before {
-  content: ""; position: fixed; inset: -20%; z-index: -1; pointer-events: none;
+  content: ""; position: fixed; inset: -20%; z-index: 0; pointer-events: none;
   background: radial-gradient(ellipse at 15% 20%, rgba(108,99,255,.20), transparent 38%), radial-gradient(ellipse at 82% 32%, rgba(56,189,248,.13), transparent 35%), radial-gradient(ellipse at 50% 85%, rgba(34,211,160,.10), transparent 40%);
   animation: cet-motion-background 14s ease-in-out infinite alternate; will-change: transform;
 }
