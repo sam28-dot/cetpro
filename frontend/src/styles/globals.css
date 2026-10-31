@@ -620,3 +620,66 @@ img { transition: opacity .2s ease; }
   .hero-grid { transform: none !important; }
   .feature-card, .feature-card > *, .stat-num { transition: none !important; transform: none !important; }
 }
+
+
+/* ── App-wide interface motion (all routes, not only the landing page) ── */
+@keyframes cetpro-route-enter {
+  from { opacity: 0; transform: translate3d(0, 9px, 0); filter: blur(1px); }
+  to   { opacity: 1; transform: translate3d(0, 0, 0); filter: blur(0); }
+}
+@keyframes cetpro-control-enter {
+  from { opacity: 0; transform: translateY(7px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes cetpro-notice-enter {
+  from { opacity: 0; transform: translate3d(0, 8px, 0) scale(.985); }
+  to   { opacity: 1; transform: translate3d(0, 0, 0) scale(1); }
+}
+.route-transition {
+  min-height: 1px;
+  animation: cetpro-route-enter .32s cubic-bezier(.2,.7,.2,1) both;
+}
+.route-transition .page-wrapper { animation: none; }
+.route-transition .page-header { animation: cetpro-control-enter .38s cubic-bezier(.2,.7,.2,1) both; }
+.route-transition .page-header > *:nth-child(2) { animation-delay: .045s; }
+.route-transition .page-header > *:nth-child(3) { animation-delay: .09s; }
+
+/* Shared interaction language across navigation, forms, actions and data. */
+.nav-root, .bottom-nav, .sidebar, .dropdown-menu, .popover, [role="dialog"] {
+  transition: background-color .22s ease, border-color .22s ease, box-shadow .22s ease;
+}
+.nav-link, .bottom-nav a, .sidebar a, .theme-option, .dropdown-item {
+  transition: color .18s ease, background-color .18s ease, transform .18s ease;
+}
+.nav-link:hover, .bottom-nav a:hover, .sidebar a:hover, .dropdown-item:hover {
+  transform: translateY(-1px);
+}
+button:not(:disabled), [role="button"]:not([aria-disabled="true"]) {
+  transition: transform .18s ease, filter .18s ease, box-shadow .22s ease;
+}
+button:not(:disabled):active, [role="button"]:not([aria-disabled="true"]):active {
+  transform: scale(.985);
+}
+input, select, textarea {
+  transition: border-color .2s ease, box-shadow .2s ease, background-color .2s ease;
+}
+details > * { animation: cetpro-notice-enter .2s ease both; }
+[role="dialog"], .modal, .modal-overlay, .dropdown-menu, .popover {
+  animation: cetpro-notice-enter .2s cubic-bezier(.2,.7,.2,1) both;
+}
+table tbody tr { transition: background-color .16s ease; }
+table tbody tr:hover { background-color: color-mix(in srgb, var(--accent) 5%, transparent); }
+hr, .divider { transition: background-color .2s ease; }
+
+/* Avoid imposing entrance animation on every child: data-heavy tables stay responsive. */
+@media (prefers-reduced-motion: reduce) {
+  .route-transition, .route-transition .page-header, .route-transition .page-header > *,
+  [role="dialog"], .modal, .modal-overlay, .dropdown-menu, .popover, details > * {
+    animation: none !important;
+    filter: none !important;
+  }
+  .nav-link, .bottom-nav a, .sidebar a, .theme-option, .dropdown-item,
+  button, [role="button"], input, select, textarea, table tbody tr {
+    transition: none !important;
+  }
+}
