@@ -31,6 +31,7 @@ import HistoricalCutoffs from './pages/HistoricalCutoffs';
 
 import './styles/globals.css';
 import './styles/components.css';
+import './styles/premium-motion.css';
 
 // ── Route guards ──────────────────────────────────────────────────
 const PrivateRoute = ({ children }) => {
@@ -65,23 +66,23 @@ const AppShell = () => {
       <div key={pathname} className="route-transition">
       <Routes>
         {/* Public */}
-        <Route path="/"          element={<Landing />} />
-        <Route path="/about"     element={<About />} />
+        <Route path="/" element={<Landing />} />
+        <Route path="/about" element={<About />} />
         <Route path="/historical-cutoffs" element={<HistoricalCutoffs />} />
         <Route path="/share/:token" element={<SharedResult />} />
 
         {/* Auth (public only when logged out) */}
-        <Route path="/login"    element={<PublicOnlyRoute><Login /></PublicOnlyRoute>} />
-        <Route path="/signup"   element={<PublicOnlyRoute><Signup /></PublicOnlyRoute>} />
+        <Route path="/login" element={<PublicOnlyRoute><Login /></PublicOnlyRoute>} />
+        <Route path="/signup" element={<PublicOnlyRoute><Signup /></PublicOnlyRoute>} />
         <Route path="/forgot-password" element={<PublicOnlyRoute><ForgotPassword /></PublicOnlyRoute>} />
-        <Route path="/reset-password"  element={<ResetPassword />} />
+        <Route path="/reset-password" element={<ResetPassword />} />
 
         {/* Protected */}
-        <Route path="/predictor"  element={<PrivateRoute><Predictor /></PrivateRoute>} />
+        <Route path="/predictor" element={<PrivateRoute><Predictor /></PrivateRoute>} />
         <Route path="/results/:id" element={<PrivateRoute><Results /></PrivateRoute>} />
-        <Route path="/dashboard"  element={<PrivateRoute><Dashboard /></PrivateRoute>} />
+        <Route path="/dashboard" element={<PrivateRoute><Dashboard /></PrivateRoute>} />
         <Route path="/prediction/:id" element={<PrivateRoute><PredictionDetail /></PrivateRoute>} />
-        <Route path="/compare"    element={<PrivateRoute><Compare /></PrivateRoute>} />
+        <Route path="/compare" element={<PrivateRoute><Compare /></PrivateRoute>} />
 
         <Route path="*" element={<NotFound />} />
       </Routes>
